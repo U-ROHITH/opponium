@@ -11,7 +11,7 @@ function S0() {
   const f = useCurrentFrame(); // 0..44
   const { v } = useLayout();
   const words = ["STOP", "GETTING", "GHOSTED."];
-  const size = v ? 190 : 210;
+  const size = v ? 168 : 210;
   const ghost = ip(f, [30, 38], [0, 1], E.inOut);
   const drift = ip(f, [0, 44], [1, 1.03], E.inOut);
   return (
