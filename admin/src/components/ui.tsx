@@ -1,7 +1,9 @@
 import type { ButtonHTMLAttributes, InputHTMLAttributes, ReactNode, SelectHTMLAttributes, TextareaHTMLAttributes } from "react";
 import { Link } from "react-router-dom";
+import { ChevronDown } from "lucide-react";
+import { twMerge } from "tailwind-merge";
 
-const cx = (...c: (string | false | undefined)[]) => c.filter(Boolean).join(" ");
+const cx = (...c: (string | false | undefined)[]) => twMerge(c.filter(Boolean).join(" "));
 export { cx };
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
@@ -42,10 +44,10 @@ export function Field({ label, hint, children, optional }: { label: string; hint
 }
 
 const inputBase =
-  "w-full rounded-md border border-grey-300 bg-paper px-3 text-[15px] text-ink placeholder:text-grey-400 hover:border-grey-400 focus:border-ink focus:outline-none read-only:bg-grey-50 read-only:text-grey-600";
+  "w-full rounded-md border border-grey-300 bg-paper px-3 text-[15px] text-ink placeholder:text-grey-400 hover:border-grey-400 focus:border-ink focus:outline-none disabled:bg-grey-50 disabled:text-grey-500";
 
 export function Input({ className, ...rest }: InputHTMLAttributes<HTMLInputElement>) {
-  return <input className={cx(inputBase, "h-10", className)} {...rest} />;
+  return <input className={cx(inputBase, "h-10 read-only:bg-grey-50 read-only:text-grey-600", className)} {...rest} />;
 }
 
 export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLTextAreaElement>) {
@@ -54,9 +56,12 @@ export function Textarea({ className, ...rest }: TextareaHTMLAttributes<HTMLText
 
 export function Select({ className, children, ...rest }: SelectHTMLAttributes<HTMLSelectElement>) {
   return (
-    <select className={cx(inputBase, "h-10 appearance-none bg-[url('data:image/svg+xml;utf8,<svg xmlns=%22http://www.w3.org/2000/svg%22 width=%2212%22 height=%2212%22 viewBox=%220 0 12 12%22><path d=%22M3 4.5l3 3 3-3%22 fill=%22none%22 stroke=%22%23666%22 stroke-width=%221.5%22/></svg>')] bg-[right_12px_center] bg-no-repeat pr-9", className)} {...rest}>
-      {children}
-    </select>
+    <span className={cx("relative block w-full", className)}>
+      <select className={cx(inputBase, "h-10 appearance-none pr-9")} {...rest}>
+        {children}
+      </select>
+      <ChevronDown size={16} className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-grey-500" />
+    </span>
   );
 }
 
@@ -85,7 +90,7 @@ export function Initials({ name, size = 32 }: { name: string; size?: number }) {
   return (
     <span
       className="inline-flex shrink-0 items-center justify-center rounded-full border border-grey-300 bg-grey-50 font-medium text-grey-700"
-      style={{ width: size, height: size, fontSize: size * 0.38 }}
+      style={{ width: size, height: size, fontSize: size >= 44 ? 15 : size >= 30 ? 12 : 11 }}
     >
       {init}
     </span>
@@ -96,7 +101,7 @@ export function CompanyMark({ name, size = 40 }: { name: string; size?: number }
   return (
     <span
       className="inline-flex shrink-0 items-center justify-center rounded-md bg-ink font-display font-semibold text-paper"
-      style={{ width: size, height: size, fontSize: size * 0.42 }}
+      style={{ width: size, height: size, fontSize: size >= 44 ? 22 : size >= 38 ? 18 : 15 }}
     >
       {name[0]}
     </span>

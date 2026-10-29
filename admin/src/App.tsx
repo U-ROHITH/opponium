@@ -1,9 +1,11 @@
 import { BrowserRouter, Route, Routes } from "react-router-dom";
 import { Shell } from "./components/Shell";
+import { AdminState } from "./state";
 import { Audit, Companies, Invites, Login, Lookup, Overview, Requests, Settings, Sla, Users } from "./pages/Pages";
 
 export default function App() {
   return (
+    <AdminState>
     <BrowserRouter>
       <Routes>
         <Route path="/login" element={<Login />} />
@@ -21,5 +23,6 @@ export default function App() {
         </Route>
       </Routes>
     </BrowserRouter>
+    </AdminState>
   );
 }

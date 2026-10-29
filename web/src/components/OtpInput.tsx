@@ -4,7 +4,9 @@ import { cx } from "./ui";
 /** One real input (so autofill and paste work) drawn as six boxes. */
 export function OtpInput({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) {
   const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => ref.current?.focus(), []);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
   return (
     <div className="relative" onClick={() => ref.current?.focus()}>
       <input
@@ -24,7 +26,7 @@ export function OtpInput({ value, onChange, error }: { value: string; onChange: 
             <div
               key={i}
               className={cx(
-                "tnum flex h-12 items-center justify-center rounded-md border text-[20px] font-medium",
+                "tnum flex h-12 items-center justify-center rounded-md border text-[22px] font-medium",
                 error ? "border-bad" : active ? "border-ink" : "border-grey-300",
               )}
             >

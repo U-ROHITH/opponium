@@ -31,9 +31,9 @@ function TrackerPreview() {
 
 const ticks = [
   { at: "0h", title: "You apply", body: "Resume and a few basics. Most of it is already filled in from your profile." },
-  { at: "Within hours", title: "Someone opens it", body: "You see “Viewed” the moment a recruiter opens your application." },
+  { at: "First hours", title: "Someone opens it", body: "You see “Viewed” the moment a recruiter opens your application." },
   { at: "As it moves", title: "Every step, live", body: "Reviewing your resume, step completed, interview scheduled. No guessing." },
-  { at: "40h", title: "A real reply", body: "A next step or a clear no. If a team runs late, it is flagged to us, not hidden from you." },
+  { at: "By 40h", title: "A real reply", body: "A next step or a clear no. If a team runs late, it is flagged to us, not hidden from you." },
 ];
 
 export default function Landing() {
@@ -48,7 +48,7 @@ export default function Landing() {
           <a href="#teams" className="hidden text-[14px] text-grey-700 hover:text-ink sm:inline">
             For hiring teams
           </a>
-          <Link to="/login" className="px-2 text-[14px] text-grey-700 hover:text-ink">
+          <Link to="/login" className="px-2 py-2.5 text-[14px] text-grey-700 hover:text-ink">
             Sign in
           </Link>
           <ButtonLink to="/invite" className="h-9 px-4">
@@ -60,7 +60,7 @@ export default function Landing() {
       <section className="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-12 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
         <div className="max-w-xl">
           <h1 className="text-[40px] font-semibold sm:text-[56px]">Apply once. Hear back within 40 hours.</h1>
-          <p className="mt-6 text-[17px] leading-relaxed text-grey-700">
+          <p className="mt-6 text-[18px] leading-relaxed text-grey-700">
             Opponium is an invite-only hiring network for students and early-career engineers. Every application gets a reply in 40
             hours, and you can see exactly where yours is the whole time.
           </p>
@@ -78,53 +78,34 @@ export default function Landing() {
       </section>
 
       <section className="border-t border-grey-200">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <h2 className="max-w-lg text-[30px] font-semibold">What happens in those 40 hours</h2>
-          <ol className="mt-12 grid gap-10 sm:grid-cols-2 lg:grid-cols-4 lg:gap-0">
-            {ticks.map((t, i) => (
-              <li key={t.title} className="relative lg:pr-8">
-                <div className="flex items-center gap-3">
-                  <span className={`h-3 w-3 shrink-0 rounded-full ${i === ticks.length - 1 ? "bg-ink" : "border-2 border-ink bg-paper"}`} />
-                  <span className="hidden h-px flex-1 bg-grey-300 lg:block" />
-                </div>
-                <p className="tnum mt-4 text-[13px] font-medium text-grey-500">{t.at}</p>
-                <h3 className="mt-1 text-[18px] font-semibold">{t.title}</h3>
-                <p className="mt-2 text-grey-600">{t.body}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      <section className="border-t border-grey-200 bg-grey-50">
-        <div className="mx-auto grid max-w-6xl gap-12 px-4 py-20 sm:px-6 lg:grid-cols-2">
+        <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <div>
-            <h2 className="text-[30px] font-semibold">Five steps, the same for every role</h2>
-            <p className="mt-4 max-w-md text-grey-700">
-              Every company on Opponium uses the same stages, so “Profile review” means the same thing at a startup as it does at a bank.
+            <h2 className="text-[28px] font-semibold">What happens in those 40 hours</h2>
+            <p className="mt-4 max-w-sm text-grey-700">
+              Every company uses the same five stages, so “Profile review” means the same thing at a startup as it does at a bank.
             </p>
           </div>
-          <div className="rounded-lg border border-grey-200 bg-paper p-6">
-            <ol className="space-y-4">
-              {STAGES.map((s, i) => (
-                <li key={s.key} className="flex gap-4">
-                  <span className="tnum w-5 shrink-0 pt-0.5 text-[13px] text-grey-500">{i + 1}</span>
-                  <div>
-                    <p className="font-medium">{s.label}</p>
-                    <p className="text-[14px] text-grey-600">{s.next}</p>
-                  </div>
-                </li>
+          <table className="w-full text-left">
+            <tbody className="divide-y divide-grey-200 border-y border-grey-200">
+              {ticks.map((t) => (
+                <tr key={t.title} className="align-top">
+                  <td className="tnum w-28 py-5 pr-4 text-[14px] text-grey-500 sm:w-36">{t.at}</td>
+                  <td className="py-5">
+                    <p className="font-medium">{t.title}</p>
+                    <p className="mt-1 text-grey-600">{t.body}</p>
+                  </td>
+                </tr>
               ))}
-            </ol>
-          </div>
+            </tbody>
+          </table>
         </div>
       </section>
 
       <section id="teams" className="border-t border-grey-200">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <div className="grid gap-12 lg:grid-cols-[1fr_1.4fr]">
+        <div className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="grid gap-10 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
             <div>
-              <h2 className="text-[30px] font-semibold">For hiring teams</h2>
+              <h2 className="text-[28px] font-semibold">For hiring teams</h2>
               <p className="mt-4 max-w-md text-grey-700">
                 Your inbox is sorted by who is waiting longest. Move people between stages, tell them what you're doing with one tap, and
                 never let a reply slip past 40 hours.
@@ -134,7 +115,7 @@ export default function Landing() {
                 <li>Resume, links and answers on one screen</li>
                 <li>A due time on every applicant, not a vague backlog</li>
               </ul>
-              <Link to="/r/inbox" className="mt-8 inline-block text-[14px] font-medium underline underline-offset-4">
+              <Link to="/r/inbox" className="mt-6 inline-block py-2 text-[14px] font-medium underline underline-offset-4">
                 See the recruiter inbox
               </Link>
             </div>
@@ -168,23 +149,31 @@ export default function Landing() {
       </section>
 
       <section className="border-t border-grey-200">
-        <div className="mx-auto max-w-6xl px-4 py-20 sm:px-6">
-          <h2 className="max-w-xl text-[30px] font-semibold">Why invite only</h2>
-          <p className="mt-4 max-w-2xl text-grey-700">
-            A 40-hour promise only works if every team can keep it. We add companies when they have the people to reply, and candidates
-            in groups that match the roles that are open. Smaller, but every application is read.
-          </p>
+        <div className="mx-auto grid max-w-6xl gap-8 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
+          <h2 className="text-[28px] font-semibold">Why invite only</h2>
+          <div>
+            <p className="max-w-2xl text-grey-700">
+              A 40-hour promise only works if every team can keep it. We add companies when they have the people to reply, and candidates
+              in groups that match the roles that are open. It's smaller, but every application is read.
+            </p>
+            <div className="mt-6 flex flex-wrap gap-3">
+              <ButtonLink to="/invite">Join with an invite</ButtonLink>
+              <ButtonLink to="/request-access" variant="secondary">
+                Request access
+              </ButtonLink>
+            </div>
+          </div>
         </div>
       </section>
 
       <footer className="border-t border-grey-200">
         <div className="mx-auto flex max-w-6xl flex-col gap-4 px-4 py-10 text-[13px] text-grey-500 sm:flex-row sm:items-center sm:justify-between sm:px-6">
           <Brand />
-          <div className="flex gap-6">
-            <a href="mailto:hello@opponium.com" className="hover:text-ink">
+          <div className="flex flex-wrap items-center gap-x-6">
+            <a href="mailto:hello@opponium.com" className="py-2 hover:text-ink">
               hello@opponium.com
             </a>
-            <Link to="/screens" className="hover:text-ink">
+            <Link to="/screens" className="py-2 hover:text-ink">
               All screens
             </Link>
             <span>© 2026 Opponium</span>

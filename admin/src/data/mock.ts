@@ -74,6 +74,34 @@ export const jobs: Job[] = [
     responsibilities: ["Run research with clinic staff", "Ship designs with engineers", "Maintain our component library"],
     requirements: ["A portfolio with shipped work", "Figma", "Comfort with dense, data-heavy screens"],
   },
+  {
+    id: "j-105",
+    title: "Software Engineer Intern",
+    company: "Northwind Finance",
+    team: "Platform",
+    location: "Pune, on-site",
+    type: "Internship",
+    salary: "₹50,000 / month",
+    postedAt: h(-6),
+    applicants: 64,
+    summary: "Join the platform team for six months and ship internal tools that 400 analysts use every day.",
+    responsibilities: ["Build internal tools in React and Django", "Write tests for everything you ship", "Demo your work every two weeks"],
+    requirements: ["Graduating in 2026 or 2027", "One project you built end to end", "Python or JavaScript"],
+  },
+  {
+    id: "j-106",
+    title: "Support Engineer",
+    company: "Fernhill",
+    team: "Customer Success",
+    location: "Remote, India",
+    type: "Full-time",
+    salary: "₹9L to ₹13L",
+    postedAt: h(-50),
+    applicants: 27,
+    summary: "Be the person clinics call when something breaks. Debug, fix what you can, and write up what you can't for engineering.",
+    responsibilities: ["Answer clinic tickets within two hours", "Reproduce bugs and file clear reports", "Write help articles"],
+    requirements: ["Clear spoken and written English and Hindi", "Comfort with SQL basics", "Patience"],
+  },
 ];
 
 const base = {
@@ -144,7 +172,7 @@ export const applications: Application[] = [
     replyDueAt: h(-160),
     firstReplyAt: h(-180),
     status: "declined",
-    stage: "decision",
+    stage: "resume",
     owner: "Sana Kapoor",
     resumeFile: "Aarav_Mehta_Resume.pdf",
     signals: [

@@ -20,17 +20,17 @@ export function EnterInvite() {
   const [code, setCode] = useState("");
   return (
     <AuthLayout>
-      <h1 className="text-[26px] font-semibold">Join with an invite</h1>
+      <h1 className="text-[28px] font-semibold">Join with an invite</h1>
       <p className="mt-2 text-grey-600">Opponium is invite only. Paste the code from your invite email, or open the link in it.</p>
       <form
         className="mt-8 space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
-          nav("/invite/kl-7Q2M-9XPA");
+          nav(`/invite/${encodeURIComponent(code.trim())}`);
         }}
       >
         <Field label="Invite code">
-          <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="KL-7Q2M-9XPA" className="tnum tracking-wide" />
+          <Input value={code} onChange={(e) => setCode(e.target.value.toUpperCase())} placeholder="KL-7Q2M-9XPA" autoCapitalize="characters" className="tnum tracking-wide" />
         </Field>
         <Button className="w-full" disabled={code.length < 4}>
           Continue
@@ -39,13 +39,13 @@ export function EnterInvite() {
       <div className="mt-8 space-y-2 border-t border-grey-200 pt-6 text-[14px] text-grey-600">
         <p>
           Already have an account?{" "}
-          <Link to="/login" className="font-medium text-ink underline underline-offset-2">
+          <Link to="/login" className="inline-block py-2 font-medium text-ink underline underline-offset-2">
             Sign in
           </Link>
         </p>
         <p>
           No invite yet?{" "}
-          <Link to="/request-access" className="font-medium text-ink underline underline-offset-2">
+          <Link to="/request-access" className="inline-block py-2 font-medium text-ink underline underline-offset-2">
             Request access
           </Link>
         </p>
@@ -56,11 +56,11 @@ export function EnterInvite() {
 
 export function AcceptInvite() {
   const { token } = useParams();
-  if (token === "expired") return <InviteExpired />;
+  if (token?.toLowerCase() === "expired") return <InviteExpired />;
   return (
-    <AuthLayout step="Step 1 of 3">
-      <p className="text-[14px] text-grey-600">Priya Nair invited you to</p>
-      <h1 className="mt-1 text-[26px] font-semibold">Join Kite Labs on Opponium</h1>
+    <AuthLayout step="Step 1 of 4">
+      <h1 className="text-[28px] font-semibold">You're invited to Opponium</h1>
+      <p className="mt-2 text-grey-600">Priya Nair from Kite Labs sent you an invite. Accept it to create your account.</p>
       <dl className="mt-8 divide-y divide-grey-200 rounded-md border border-grey-200">
         <div className="flex justify-between gap-4 px-4 py-3">
           <dt className="text-grey-600">Role</dt>
@@ -81,7 +81,7 @@ export function AcceptInvite() {
       <ButtonLink to="/verify/email" className="mt-6 w-full">
         Continue
       </ButtonLink>
-      <p className="mt-4 text-center text-[13px] text-grey-500">Invite {token}</p>
+      <p className="tnum mt-4 text-center text-[13px] text-grey-500">Invite code {token}</p>
     </AuthLayout>
   );
 }
@@ -92,7 +92,7 @@ export function InviteExpired() {
       <span className="flex h-10 w-10 items-center justify-center rounded-full border border-grey-300">
         <Clock3 size={18} />
       </span>
-      <h1 className="mt-5 text-[26px] font-semibold">This invite has expired</h1>
+      <h1 className="mt-5 text-[28px] font-semibold">This invite has expired</h1>
       <p className="mt-2 text-grey-600">
         Invites last 7 days. Ask Priya Nair at Kite Labs to send a new one, and it will arrive at the same email address.
       </p>
@@ -103,7 +103,7 @@ export function InviteExpired() {
   );
 }
 
-function CodeStep({ title, target, change, next, step }: { title: string; target: string; change: string; next: string; step: string }) {
+function CodeStep({ title, target, change, next, step }: { title: string; target: string; change: string | (() => void); next: string; step: string }) {
   const nav = useNavigate();
   const [code, setCode] = useState("");
   const [left, reset] = useCountdown(30);
@@ -119,7 +119,7 @@ function CodeStep({ title, target, change, next, step }: { title: string; target
 
   return (
     <AuthLayout step={step}>
-      <h1 className="text-[26px] font-semibold">{title}</h1>
+      <h1 className="text-[28px] font-semibold">{title}</h1>
       <p className="mt-2 text-grey-600">
         We sent a 6-digit code to <span className="font-medium text-ink">{target}</span>. It expires in 10 minutes.
       </p>
@@ -138,7 +138,7 @@ function CodeStep({ title, target, change, next, step }: { title: string; target
           <span className="tnum text-grey-500">Resend code in 0:{String(left).padStart(2, "0")}</span>
         ) : (
           <button
-            className="font-medium underline underline-offset-2"
+            className="py-2 font-medium underline underline-offset-2"
             onClick={() => {
               setResends(resends + 1);
               reset();
@@ -147,25 +147,31 @@ function CodeStep({ title, target, change, next, step }: { title: string; target
             Resend code
           </button>
         )}
-        <Link to={change} className="text-grey-600 hover:text-ink">
-          {change.includes("phone") ? "Change number" : "Wrong email?"}
-        </Link>
+        {typeof change === "string" ? (
+          <Link to={change} className="py-2 text-grey-600 hover:text-ink">
+            Wrong email?
+          </Link>
+        ) : (
+          <button onClick={change} className="py-2 text-grey-600 hover:text-ink">
+            Change number
+          </button>
+        )}
       </div>
     </AuthLayout>
   );
 }
 
 export function VerifyEmail() {
-  return <CodeStep title="Check your email" target="aa***@iitm.ac.in" change="/invite" next="/verify/phone" step="Step 1 of 3" />;
+  return <CodeStep title="Check your email" target="aa***@iitm.ac.in" change="/invite" next="/verify/phone" step="Step 2 of 4" />;
 }
 
 export function VerifyPhone() {
   const [sent, setSent] = useState(false);
   const [num, setNum] = useState("98480 22314");
-  if (sent) return <CodeStep title="Check your phone" target={`+91 ${num.slice(0, 2)}*** ***${num.slice(-2)}`} change="/verify/phone" next="/onboarding" step="Step 2 of 3" />;
+  if (sent) return <CodeStep title="Check your phone" target={`+91 ${num.slice(0, 2)}*** ***${num.slice(-2)}`} change={() => setSent(false)} next="/onboarding" step="Step 3 of 4" />;
   return (
-    <AuthLayout step="Step 2 of 3">
-      <h1 className="text-[26px] font-semibold">Add your phone number</h1>
+    <AuthLayout step="Step 3 of 4">
+      <h1 className="text-[28px] font-semibold">Add your phone number</h1>
       <p className="mt-2 text-grey-600">Recruiters use it only to reach you about interviews. We'll text you a code to confirm it.</p>
       <form
         className="mt-8 space-y-5"
@@ -182,7 +188,7 @@ export function VerifyPhone() {
               <option>+44</option>
               <option>+971</option>
             </Select>
-            <Input value={num} onChange={(e) => setNum(e.target.value)} inputMode="tel" autoComplete="tel-national" className="tnum" />
+            <Input value={num} onChange={(e) => setNum(e.target.value)} inputMode="tel" autoComplete="tel-national" className="tnum min-w-0 flex-1" required />
           </div>
         </Field>
         <Button className="w-full">Send code</Button>
@@ -194,8 +200,8 @@ export function VerifyPhone() {
 export function Onboarding() {
   const nav = useNavigate();
   return (
-    <AuthLayout step="Step 3 of 3">
-      <h1 className="text-[26px] font-semibold">A few basics</h1>
+    <AuthLayout step="Step 4 of 4">
+      <h1 className="text-[28px] font-semibold">A few basics</h1>
       <p className="mt-2 text-grey-600">This fills in every application for you. You can change it later.</p>
       <form
         className="mt-8 space-y-5"
@@ -232,7 +238,7 @@ export function Login() {
   const nav = useNavigate();
   return (
     <AuthLayout>
-      <h1 className="text-[26px] font-semibold">Sign in</h1>
+      <h1 className="text-[28px] font-semibold">Sign in</h1>
       <p className="mt-2 text-grey-600">We'll email you a code. No password needed.</p>
       <form
         className="mt-8 space-y-5"
@@ -248,7 +254,7 @@ export function Login() {
       </form>
       <p className="mt-8 border-t border-grey-200 pt-6 text-[14px] text-grey-600">
         New here?{" "}
-        <Link to="/invite" className="font-medium text-ink underline underline-offset-2">
+        <Link to="/invite" className="inline-block py-2 font-medium text-ink underline underline-offset-2">
           Use an invite
         </Link>
       </p>
@@ -261,7 +267,7 @@ export function RequestAccess() {
   if (done)
     return (
       <AuthLayout>
-        <h1 className="text-[26px] font-semibold">Request received</h1>
+        <h1 className="text-[28px] font-semibold">Request received</h1>
         <p className="mt-2 text-grey-600">
           We review requests every weekday. If there's a fit, your invite will arrive by email within 3 working days.
         </p>
@@ -272,7 +278,7 @@ export function RequestAccess() {
     );
   return (
     <AuthLayout>
-      <h1 className="text-[26px] font-semibold">Request access</h1>
+      <h1 className="text-[28px] font-semibold">Request access</h1>
       <p className="mt-2 text-grey-600">Tell us who you are. We add candidates and hiring teams in small groups.</p>
       <form
         className="mt-8 space-y-5"

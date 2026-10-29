@@ -6,15 +6,18 @@ import { ActivityFeed, SlaLabel, Stepper } from "../components/status";
 import { Brand } from "../components/Shell";
 import { OtpBoxes } from "../components/OtpBoxes";
 import { accessRequests, audit, companies, invites as seedInvites, replyTrend, users, type InviteStatus } from "../data/admin";
-import { applications, jobById, pipeline, STAGES } from "../data/mock";
+import { applications, jobById, NOW, pipeline, STAGES } from "../data/mock";
+import { useAdminState } from "../state";
 import { slaState } from "../lib/sla";
 import { formatDateTime, hoursFromNow, relative } from "../lib/time";
 
 const stageLabel = (k: string) => STAGES.find((s) => s.key === k)!.label;
 
-function Table({ head, children, min = 720 }: { head: string[]; children: React.ReactNode; min?: number }) {
+function Table({ head, children, min = 720, mobile }: { head: string[]; children: React.ReactNode; min?: number; mobile?: React.ReactNode }) {
   return (
-    <div className="overflow-x-auto rounded-lg border border-grey-200">
+    <>
+      {mobile && <ul className="divide-y divide-grey-200 border-y border-grey-200 md:hidden">{mobile}</ul>}
+    <div className={cx("overflow-x-auto rounded-lg border border-grey-200", mobile ? "hidden md:block" : undefined)}>
       <table className="w-full text-left text-[14px]" style={{ minWidth: min }}>
         <thead className="border-b border-grey-200 bg-grey-50 text-[12px] text-grey-600">
           <tr>
@@ -28,6 +31,22 @@ function Table({ head, children, min = 720 }: { head: string[]; children: React.
         <tbody className="divide-y divide-grey-200">{children}</tbody>
       </table>
     </div>
+    </>
+  );
+}
+
+function MobileRow({ title, sub, meta, actions }: { title: React.ReactNode; sub?: React.ReactNode; meta?: React.ReactNode; actions?: React.ReactNode }) {
+  return (
+    <li className="py-4">
+      <div className="flex items-start justify-between gap-3">
+        <div className="min-w-0">
+          <div className="truncate font-medium">{title}</div>
+          {sub && <div className="mt-0.5 text-[13px] text-grey-600">{sub}</div>}
+        </div>
+        {meta && <div className="shrink-0 text-right">{meta}</div>}
+      </div>
+      {actions && <div className="mt-3 flex flex-wrap gap-2">{actions}</div>}
+    </li>
   );
 }
 
@@ -55,7 +74,7 @@ function SmallButton({ children, onClick, tone }: { children: React.ReactNode; o
     <button
       onClick={onClick}
       className={cx(
-        "h-7 rounded-full border border-grey-300 px-3 text-[12px] font-medium hover:border-ink",
+        "h-8 rounded-full border border-grey-300 px-3.5 text-[13px] font-medium hover:border-ink",
         tone === "bad" && "text-bad hover:border-bad",
       )}
     >
@@ -77,36 +96,38 @@ export function Overview() {
   const max = Math.max(...replyTrend);
   return (
     <div>
-      <PageHeader title="Overview" sub="Thursday 29 October. Sample data." />
-      <dl className="mt-8 grid grid-cols-2 divide-grey-200 rounded-lg border border-grey-200 sm:grid-cols-3 lg:grid-cols-5 lg:divide-x">
-        {stats.map(([k, v, sub], i) => (
-          <div key={k} className={cx("p-5", i > 0 && "border-t border-grey-200 lg:border-t-0", i === 1 && "border-t-0 sm:border-t-0")}>
-            <dt className="text-[13px] text-grey-600">{k}</dt>
-            <dd className={cx("tnum mt-1 font-display text-[28px] font-semibold", k === "Overdue now" && overdue.length > 0 && "text-bad")}>{v}</dd>
-            <p className="text-[12px] text-grey-500">{sub}</p>
+      <PageHeader title="Overview" sub="Thursday 29 October, sample data." />
+      <dl className="mt-8 grid border-t border-grey-200 sm:grid-cols-2 sm:gap-x-12">
+        {stats.map(([k, v, sub]) => (
+          <div key={k} className="flex items-baseline justify-between gap-4 border-b border-grey-200 py-3.5">
+            <dt>
+              <span className="text-[14px]">{k}</span>
+              <span className="block text-[12px] text-grey-500">{sub}</span>
+            </dt>
+            <dd className={cx("tnum font-display text-[22px] font-semibold", k === "Overdue now" && overdue.length > 0 && "text-bad")}>{v}</dd>
           </div>
         ))}
       </dl>
 
-      <div className="mt-10 grid gap-10 lg:grid-cols-[1.3fr_1fr]">
+      <div className="mt-10 grid gap-10 lg:grid-cols-[1.3fr_1fr] [&>*]:min-w-0">
         <section>
           <div className="flex items-baseline justify-between">
             <h2 className="text-[18px] font-semibold">Needs attention</h2>
-            <Link to="/sla" className="text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
+            <Link to="/sla" className="py-2 text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
               All breaches
             </Link>
           </div>
           <ul className="mt-4 divide-y divide-grey-200 border-y border-grey-200">
             {[...overdue, ...soon].map((a) => (
               <li key={a.id} className="flex items-center gap-3 py-3">
-                <Initials name={a.candidate.name} size={30} />
+                <Initials name={a.candidate.name} size={32} />
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-[14px] font-medium">{a.candidate.name}</p>
                   <p className="truncate text-[13px] text-grey-500">
                     {jobById(a.jobId).company}, {jobById(a.jobId).title}, owner {a.owner}
                   </p>
                 </div>
-                <SlaLabel app={a} />
+                <SlaLabel app={a} className="shrink-0" />
               </li>
             ))}
           </ul>
@@ -114,11 +135,11 @@ export function Overview() {
         <section>
           <h2 className="text-[18px] font-semibold">Median time to first reply</h2>
           <p className="mt-1 text-[13px] text-grey-500">Hours, last 14 days. Target is under 40.</p>
-          <div className="mt-6 flex h-36 items-end gap-1.5 border-b border-grey-300" role="img" aria-label="Median first reply fell from 31 to 14 hours over 14 days">
+          <div className="mt-6 flex h-36 items-end gap-1 border-b border-grey-300 sm:gap-1.5" role="img" aria-label="Median first reply fell from 31 to 14 hours over 14 days">
             {replyTrend.map((v, i) => (
-              <div key={i} className="group relative flex-1">
+              <div key={i} className="group relative min-w-0 flex-1">
                 <div className={cx("w-full rounded-t-sm", i === replyTrend.length - 1 ? "bg-ink" : "bg-grey-300")} style={{ height: `${(v / max) * 128}px` }} />
-                <span className="tnum pointer-events-none absolute -top-5 left-1/2 hidden -translate-x-1/2 text-[11px] group-hover:block">{v}h</span>
+                <span className="tnum pointer-events-none absolute -top-5 left-1/2 hidden -translate-x-1/2 text-[12px] group-hover:block">{v}h</span>
               </div>
             ))}
           </div>
@@ -132,7 +153,7 @@ export function Overview() {
       <section className="mt-12">
         <div className="flex items-baseline justify-between">
           <h2 className="text-[18px] font-semibold">Recent activity</h2>
-          <Link to="/audit" className="text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
+          <Link to="/audit" className="py-2 text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
             Audit log
           </Link>
         </div>
@@ -164,7 +185,22 @@ export function Invites() {
   const [email, setEmail] = useState("");
   const [role, setRole] = useState("Candidate");
   const [copied, setCopied] = useState<string | null>(null);
+  const [company, setCompany] = useState(companies[0].name);
+  const [error, setError] = useState("");
   const shown = list.filter((i) => tab === "all" || i.status === tab);
+  const InviteActions = ({ i }: { i: (typeof list)[number] }) => (
+    <>
+      {(i.status === "Pending" || i.status === "Expired") && <SmallButton onClick={() => set(i.id, { status: "Pending", sent: NOW.toISOString() })}>Resend</SmallButton>}
+      {i.status === "Pending" && (
+        <>
+          <SmallButton onClick={() => setCopied(i.id)}>{copied === i.id ? "Copied" : "Copy link"}</SmallButton>
+          <SmallButton tone="bad" onClick={() => set(i.id, { status: "Revoked" })}>
+            Revoke
+          </SmallButton>
+        </>
+      )}
+    </>
+  );
   const count = (s: InviteStatus) => list.filter((i) => i.status === s).length;
   const set = (id: string, patch: Partial<(typeof list)[number]>) => setList(list.map((i) => (i.id === id ? { ...i, ...patch } : i)));
 
@@ -183,13 +219,17 @@ export function Invites() {
         className="mt-8 grid gap-3 rounded-lg border border-grey-200 p-5 sm:grid-cols-[1fr_180px_180px_auto] sm:items-end"
         onSubmit={(e) => {
           e.preventDefault();
-          if (!email) return;
-          setList([{ id: String(Date.now()), email, role, company: role === "Candidate" ? "" : "Kite Labs", by: "Rohith Uppunuthula", sent: new Date().toISOString(), status: "Pending" }, ...list]);
+          if (!/^\S+@\S+\.\S+$/.test(email)) {
+            setError("Enter a full email address, like name@college.edu.");
+            return;
+          }
+          setError("");
+          setList([{ id: String(list.length + 100), email, role, company: role === "Candidate" ? "" : company, by: "Rohith Uppunuthula", sent: NOW.toISOString(), status: "Pending" }, ...list]);
           setEmail("");
         }}
       >
         <Field label="Email">
-          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@college.edu" />
+          <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@college.edu" className={error ? "border-bad" : ""} />
         </Field>
         <Field label="Role">
           <Select value={role} onChange={(e) => setRole(e.target.value)}>
@@ -199,13 +239,18 @@ export function Invites() {
           </Select>
         </Field>
         <Field label="Company">
-          <Select disabled={role === "Candidate"}>
-            {companies.map((c) => (
-              <option key={c.id}>{c.name}</option>
-            ))}
-          </Select>
+          {role === "Candidate" ? (
+            <Input value="Not needed for candidates" disabled />
+          ) : (
+            <Select value={company} onChange={(e) => setCompany(e.target.value)}>
+              {companies.map((c) => (
+                <option key={c.id}>{c.name}</option>
+              ))}
+            </Select>
+          )}
         </Field>
         <Button>Send invite</Button>
+        {error && <p className="text-[13px] text-bad sm:col-span-4">{error}</p>}
       </form>
       <div className="mt-8">
         <Tabs
@@ -215,7 +260,18 @@ export function Invites() {
         />
       </div>
       <div className="mt-4">
-        <Table head={["Email", "Role", "Company", "Invited by", "Sent", "Status", ""]}>
+        <Table
+          head={["Email", "Role", "Company", "Invited by", "Sent", "Status", ""]}
+          mobile={shown.map((i) => (
+            <MobileRow
+              key={i.id}
+              title={i.email}
+              sub={`${i.role}${i.company ? `, ${i.company}` : ""}, sent ${relative(i.sent)}`}
+              meta={<span className={cx("text-[13px] font-medium", inviteTone[i.status])}>{i.status}</span>}
+              actions={<InviteActions i={i} />}
+            />
+          ))}
+        >
           {shown.map((i) => (
             <tr key={i.id}>
               <td className={cx(td, "font-medium")}>{i.email}</td>
@@ -226,17 +282,7 @@ export function Invites() {
               <td className={cx(td, "text-[13px] font-medium", inviteTone[i.status])}>{i.status}</td>
               <td className={cx(td, "text-right")}>
                 <div className="flex justify-end gap-2">
-                  {(i.status === "Pending" || i.status === "Expired") && (
-                    <SmallButton onClick={() => set(i.id, { status: "Pending", sent: new Date().toISOString() })}>Resend</SmallButton>
-                  )}
-                  {i.status === "Pending" && (
-                    <>
-                      <SmallButton onClick={() => setCopied(i.id)}>{copied === i.id ? "Copied" : "Copy link"}</SmallButton>
-                      <SmallButton tone="bad" onClick={() => set(i.id, { status: "Revoked" })}>
-                        Revoke
-                      </SmallButton>
-                    </>
-                  )}
+                  <InviteActions i={i} />
                 </div>
               </td>
             </tr>
@@ -248,10 +294,10 @@ export function Invites() {
 }
 
 export function Requests() {
-  const [decided, setDecided] = useState<Record<string, "Approved" | "Declined">>({});
+  const { decided, decide } = useAdminState();
   return (
     <div>
-      <PageHeader title="Access requests" sub="People who asked to join from the public site. Approving sends them an invite." />
+      <PageHeader title="Access requests" sub={`${accessRequests.filter((r) => !decided[r.id]).length} waiting. Approving sends an invite to the email they gave.`} />
       <ul className="mt-8 divide-y divide-grey-200 border-y border-grey-200">
         {accessRequests.map((r) => (
           <li key={r.id} className="flex flex-col gap-3 py-4 sm:flex-row sm:items-center">
@@ -264,19 +310,20 @@ export function Requests() {
                 </p>
               </div>
             </div>
-            <span className="w-24 text-[14px] text-grey-700">{r.as}</span>
-            <span className="tnum w-24 text-[13px] text-grey-500">{relative(r.at)}</span>
-            <div className="flex w-48 gap-2 sm:justify-end">
+            <span className="text-[13px] text-grey-600 sm:w-40 sm:text-[14px]">
+              {r.as}, {relative(r.at)}
+            </span>
+            <div className="flex gap-2 sm:w-48 sm:justify-end">
               {decided[r.id] ? (
                 <span className={cx("inline-flex items-center gap-1.5 text-[13px] font-medium", decided[r.id] === "Approved" ? "text-ok" : "text-grey-500")}>
                   {decided[r.id] === "Approved" && <Check size={14} />} {decided[r.id] === "Approved" ? "Invite sent" : "Declined"}
                 </span>
               ) : (
                 <>
-                  <Button className="h-8 px-4 text-[13px]" onClick={() => setDecided({ ...decided, [r.id]: "Approved" })}>
+                  <Button className="h-9 px-4 text-[13px]" onClick={() => decide(r.id, "Approved")}>
                     Approve
                   </Button>
-                  <Button variant="secondary" className="h-8 px-4 text-[13px]" onClick={() => setDecided({ ...decided, [r.id]: "Declined" })}>
+                  <Button variant="secondary" className="h-9 px-4 text-[13px]" onClick={() => decide(r.id, "Declined")}>
                     Decline
                   </Button>
                 </>
@@ -292,7 +339,14 @@ export function Requests() {
 export function Users() {
   const [q, setQ] = useState("");
   const [role, setRole] = useState("All");
+  const [suspended, setSuspended] = useState<Set<string>>(new Set(users.filter((u) => u.suspended).map((u) => u.id)));
   const shown = users.filter((u) => (role === "All" || u.role === role) && (u.name + u.email).toLowerCase().includes(q.toLowerCase()));
+  const action = (u: (typeof users)[number]) =>
+    suspended.has(u.id) ? (
+      <SmallButton onClick={() => { const n = new Set(suspended); n.delete(u.id); setSuspended(n); }}>Restore</SmallButton>
+    ) : u.role !== "Admin" ? (
+      <SmallButton tone="bad" onClick={() => setSuspended(new Set(suspended).add(u.id))}>Suspend</SmallButton>
+    ) : null;
   return (
     <div>
       <PageHeader title="Users" sub={`${users.length} people on Opponium.`} />
@@ -308,7 +362,25 @@ export function Users() {
         </Select>
       </div>
       <div className="mt-4">
-        <Table head={["Name", "Role", "Organisation", "Email", "Phone", "Last active", ""]}>
+        <Table
+          head={["Name", "Role", "Organisation", "Email", "Phone", "Last active", ""]}
+          mobile={shown.map((u) => (
+            <MobileRow
+              key={u.id}
+              title={u.name}
+              sub={
+                <>
+                  {u.role}, {u.org}
+                  <br />
+                  {u.email_ok ? "Email verified" : <span className="text-warn">Email not verified</span>},{" "}
+                  {u.phone_ok ? "phone verified" : <span className="text-warn">phone not verified</span>}
+                </>
+              }
+              meta={suspended.has(u.id) ? <span className="text-[13px] font-medium text-bad">Suspended</span> : <span className="tnum text-[13px] text-grey-500">{relative(u.active)}</span>}
+              actions={action(u)}
+            />
+          ))}
+        >
           {shown.map((u) => (
             <tr key={u.id}>
               <td className={td}>
@@ -321,7 +393,10 @@ export function Users() {
               <td className={cx(td, "text-[13px]")}>{u.phone_ok ? "Verified" : <span className="text-warn">Not verified</span>}</td>
               <td className={cx(td, "tnum text-grey-600")}>{relative(u.active)}</td>
               <td className={cx(td, "text-right")}>
-                {u.suspended ? <span className="text-[13px] font-medium text-bad">Suspended</span> : u.role !== "Admin" && <SmallButton tone="bad">Suspend</SmallButton>}
+                <div className="flex items-center justify-end gap-3">
+                  {suspended.has(u.id) && <span className="text-[13px] font-medium text-bad">Suspended</span>}
+                  {action(u)}
+                </div>
               </td>
             </tr>
           ))}
@@ -336,7 +411,23 @@ export function Companies() {
     <div>
       <PageHeader title="Companies" sub="Reply rate is the share of applications answered within 40 hours, last 30 days." actions={<Button>Add company</Button>} />
       <div className="mt-8">
-        <Table head={["Company", "Domain", "Recruiters", "Open jobs", "Open applications", "Reply rate", "Status"]}>
+        <Table
+          head={["Company", "Domain", "Recruiters", "Open jobs", "Open applications", "Reply rate", "Status"]}
+          mobile={companies.map((c) => (
+            <MobileRow
+              key={c.id}
+              title={c.name}
+              sub={`${c.domain}, ${c.recruiters} recruiters, ${c.jobs} open jobs`}
+              meta={
+                c.status === "Onboarding" ? (
+                  <span className="text-[13px] text-grey-500">Onboarding</span>
+                ) : (
+                  <span className={cx("tnum text-[14px] font-medium", c.compliance < 85 && "text-warn")}>{c.compliance}% on time</span>
+                )
+              }
+            />
+          ))}
+        >
           {companies.map((c) => (
             <tr key={c.id}>
               <td className={cx(td, "font-medium")}>{c.name}</td>
@@ -372,7 +463,26 @@ export function Sla() {
     <div>
       <PageHeader title="Reply breaches" sub="Applications past, or within 8 hours of, the 40-hour reply deadline." />
       <div className="mt-8">
-        <Table head={["Candidate", "Company and job", "Stage", "Owner", "Deadline", "Status", ""]}>
+        <Table
+          head={["Candidate", "Company and job", "Stage", "Owner", "Deadline", "Status", ""]}
+          mobile={rows.map((a) => (
+            <MobileRow
+              key={a.id}
+              title={a.candidate.name}
+              sub={`${jobById(a.jobId).company}, ${jobById(a.jobId).title}, owner ${a.owner}`}
+              meta={<SlaLabel app={a} />}
+              actions={
+                nudged.has(a.id) ? (
+                  <span className="inline-flex items-center gap-1 text-[13px] text-grey-500">
+                    <Check size={13} /> Nudged
+                  </span>
+                ) : (
+                  <SmallButton onClick={() => setNudged(new Set(nudged).add(a.id))}>Nudge {a.owner.split(" ")[0]}</SmallButton>
+                )
+              }
+            />
+          ))}
+        >
           {rows.map((a) => {
             const job = jobById(a.jobId);
             return (
@@ -448,7 +558,7 @@ export function Lookup() {
               {hoursFromNow(open.replyDueAt) < 0 && !open.firstReplyAt ? ", overdue" : ""}
             </p>
             <div className="mt-6">
-              <Stepper stage={open.stage} closed={open.status === "declined"} />
+              <Stepper stage={open.stage} status={open.status} />
             </div>
             <div className="mt-8 border-t border-grey-200 pt-6">
               <ActivityFeed signals={open.signals} />
@@ -471,7 +581,26 @@ export function Audit() {
         <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Filter by person, action or target" className="pl-9" />
       </div>
       <div className="mt-4">
-        <Table head={["Time", "Actor", "Action", "Target", "Detail"]}>
+        <Table
+          head={["Time", "Actor", "Action", "Target", "Detail"]}
+          mobile={shown.map((l) => (
+            <MobileRow
+              key={l.id}
+              title={
+                <span className="whitespace-normal">
+                  {l.actor} <span className="font-normal text-grey-600">{l.action.toLowerCase()}</span>
+                </span>
+              }
+              sub={
+                <>
+                  {l.target}
+                  {l.detail && <>, {l.detail}</>}
+                </>
+              }
+              meta={<span className="tnum text-[12px] text-grey-500">{relative(l.at)}</span>}
+            />
+          ))}
+        >
           {shown.map((l) => (
             <tr key={l.id}>
               <td className={cx(td, "tnum whitespace-nowrap text-grey-600")}>{formatDateTime(l.at)}</td>
@@ -560,7 +689,7 @@ export function Login() {
         <div className="w-full max-w-[380px]">
           {step === "email" ? (
             <>
-              <h1 className="text-[26px] font-semibold">Admin sign in</h1>
+              <h1 className="text-[28px] font-semibold">Admin sign in</h1>
               <p className="mt-2 text-grey-600">For the Opponium team only. Every sign in is logged.</p>
               <form
                 className="mt-8 space-y-5"
@@ -577,7 +706,7 @@ export function Login() {
             </>
           ) : (
             <>
-              <h1 className="text-[26px] font-semibold">Check your email</h1>
+              <h1 className="text-[28px] font-semibold">Check your email</h1>
               <p className="mt-2 text-grey-600">Enter the 6-digit code we sent to rohith@opponium.com.</p>
               <div className="mt-8">
                 <OtpBoxes

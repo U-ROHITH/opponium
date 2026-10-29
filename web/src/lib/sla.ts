@@ -17,8 +17,10 @@ export function slaText(app: Application) {
   const state = slaState(app);
   const left = hoursFromNow(app.replyDueAt);
   switch (state) {
-    case "replied":
-      return `Replied in ${durationHours(app.appliedAt, app.firstReplyAt!)}h`;
+    case "replied": {
+      const took = durationHours(app.appliedAt, app.firstReplyAt!);
+      return took > 40 ? `Replied late, ${took}h` : `Replied in ${took}h`;
+    }
     case "overdue":
       return `Overdue ${Math.max(1, Math.round(-left))}h`;
     default:

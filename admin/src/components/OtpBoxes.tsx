@@ -4,7 +4,9 @@ import { cx } from "./ui";
 /** One real input (so autofill and paste work) drawn as six boxes. */
 export function OtpBoxes({ value, onChange, error }: { value: string; onChange: (v: string) => void; error?: boolean }) {
   const ref = useRef<HTMLInputElement>(null);
-  useEffect(() => ref.current?.focus(), []);
+  useEffect(() => {
+    ref.current?.focus();
+  }, []);
   return (
     <div className="relative" onClick={() => ref.current?.focus()}>
       <input

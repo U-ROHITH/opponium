@@ -1,9 +1,9 @@
 import { useMemo, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowLeft, Columns3, Download, ExternalLink, Mail, Phone, Rows3 } from "lucide-react";
-import { ActivityFeed, SignalIcon, SlaLabel, Stepper } from "../components/status";
+import { ArrowLeft, Check, Columns3, Download, ExternalLink, Mail, Phone, Rows3 } from "lucide-react";
+import { ActivityFeed, SignalGlyph, SlaLabel, Stepper } from "../components/status";
 import { Button, Field, Initials, Input, PageHeader, Select, Textarea, cx } from "../components/ui";
-import { jobById, jobs, pipeline, STAGES } from "../data/mock";
+import { jobById, jobs, NOW, pipeline, STAGES } from "../data/mock";
 import type { Application, Signal, SignalKind, StageKey } from "../data/types";
 import { slaState, type SlaState } from "../lib/sla";
 import { formatDateTime, relative } from "../lib/time";
@@ -22,13 +22,13 @@ const slaOrder: Record<SlaState, number> = { overdue: 0, due_soon: 1, on_track: 
 
 function Segmented<T extends string>({ value, onChange, items }: { value: T; onChange: (v: T) => void; items: { key: T; label: string; count?: number }[] }) {
   return (
-    <div className="flex gap-1 overflow-x-auto rounded-full border border-grey-200 p-1">
+    <div className="flex w-fit max-w-full gap-1 overflow-x-auto rounded-full border border-grey-200 p-1 [scrollbar-width:none]">
       {items.map((it) => (
         <button
           key={it.key}
           onClick={() => onChange(it.key)}
           className={cx(
-            "h-7 shrink-0 rounded-full px-3 text-[13px]",
+            "h-8 shrink-0 rounded-full px-3 text-[13px]",
             value === it.key ? "bg-ink text-paper" : "text-grey-700 hover:bg-grey-100",
           )}
         >
@@ -144,13 +144,13 @@ export function RecruiterJobs() {
                 <div className="flex flex-wrap gap-x-6 gap-y-2 text-[13px]">
                   {STAGES.map((s) => (
                     <div key={s.key} className="min-w-14">
-                      <p className="tnum text-[16px] font-medium">{apps.filter((a) => a.stage === s.key).length}</p>
+                      <p className="tnum text-[15px] font-medium">{apps.filter((a) => a.stage === s.key).length}</p>
                       <p className="text-grey-500">{s.label.split(" ")[0]}</p>
                     </div>
                   ))}
                   {late > 0 && (
                     <div className="min-w-14 text-bad">
-                      <p className="tnum text-[16px] font-medium">{late}</p>
+                      <p className="tnum text-[15px] font-medium">{late}</p>
                       <p>Overdue</p>
                     </div>
                   )}
@@ -187,7 +187,7 @@ export function JobPipeline() {
   const apps = pipeline.filter((a) => a.jobId === job.id);
   return (
     <div className="mx-auto max-w-7xl">
-      <Link to="/r/jobs" className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to="/r/jobs" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> Jobs
       </Link>
       <div className="mt-4">
@@ -205,7 +205,7 @@ export function JobPipeline() {
                 <button
                   key={k}
                   onClick={() => setView(k)}
-                  className={cx("inline-flex h-7 items-center gap-1.5 rounded-full px-3 text-[13px]", view === k ? "bg-ink text-paper" : "text-grey-700 hover:bg-grey-100")}
+                  className={cx("inline-flex h-8 items-center gap-1.5 rounded-full px-3 text-[13px]", view === k ? "bg-ink text-paper" : "text-grey-700 hover:bg-grey-100")}
                 >
                   <Icon size={14} /> {label}
                 </button>
@@ -288,209 +288,210 @@ export function ReviewApplicant() {
   ]);
   const [confirmReject, setConfirmReject] = useState(false);
   const idx = STAGES.findIndex((s) => s.key === app.stage);
+  const first = app.candidate.name.split(" ")[0];
+  const decided = app.status === "declined" || app.status === "offer";
 
+  // Sample data runs on a fixed clock, so new events use it too.
   const push = (s: Omit<Signal, "id" | "at">, patch: Partial<Application> = {}) => {
-    const at = new Date().toISOString();
+    const at = NOW.toISOString();
     setApp((prev) => ({
       ...prev,
       ...patch,
       firstReplyAt: prev.firstReplyAt ?? (s.kind !== "viewed" ? at : undefined),
-      signals: [...prev.signals, { ...s, id: String(Math.random()), at }],
+      signals: [...prev.signals, { ...s, id: String(prev.signals.length + 1), at }],
     }));
   };
 
   const advance = () => {
-    if (idx >= STAGES.length - 1) return;
     const next = STAGES[idx + 1];
-    push({ kind: "step_completed", text: `Step completed: ${STAGES[idx].label}` }, { stage: next.key, status: next.key === "hr" || next.key === "manager" ? "interviewing" : "in_review" });
+    if (!next) return;
+    push(
+      { kind: "step_completed", text: `Step completed: ${STAGES[idx].label}` },
+      { stage: next.key, status: next.key === "decision" ? "offer" : next.key === "hr" || next.key === "manager" ? "interviewing" : "in_review" },
+    );
   };
+
+  const card = "rounded-lg border border-grey-200 p-5";
+  const h2 = "font-sans text-[14px] font-semibold tracking-normal";
 
   return (
     <div className="mx-auto max-w-7xl">
-      <Link to="/r/inbox" className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to="/r/inbox" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> Inbox
       </Link>
 
-      <div className="mt-5 flex flex-col gap-4 md:flex-row md:items-start md:justify-between">
+      <div className="mt-5 flex flex-col gap-3 md:flex-row md:items-start md:justify-between">
         <div className="flex items-center gap-4">
           <Initials name={app.candidate.name} size={48} />
           <div>
-            <h1 className="text-[26px] font-semibold">{app.candidate.name}</h1>
+            <h1 className="text-[28px] font-semibold">{app.candidate.name}</h1>
             <p className="text-grey-600">
               {job.title}, applied {relative(app.appliedAt)}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <SlaLabel app={app} />
-        </div>
+        <SlaLabel app={app} />
       </div>
 
       <div className="mt-6 rounded-lg border border-grey-200 p-5">
-        <Stepper stage={app.stage} closed={app.status === "declined"} />
+        <Stepper stage={app.stage} status={app.status} />
       </div>
 
-      <div className="mt-8 grid gap-8 lg:grid-cols-[1fr_380px]">
-        {/* resume */}
-        <section className="order-2 lg:order-1">
-          <div className="flex items-center justify-between">
-            <h2 className="text-[18px] font-semibold">Resume</h2>
-            <button className="inline-flex items-center gap-1.5 text-[13px] text-grey-700 hover:text-ink">
-              <Download size={14} /> {app.resumeFile}
-            </button>
+      <div className="mt-8 flex flex-col gap-6 lg:grid lg:grid-cols-[1fr_380px] lg:items-start">
+        <section className={cx(card, "lg:col-start-2 lg:row-start-1")}>
+          <h2 className={h2}>Tell {first} what's happening</h2>
+          <p className="mt-1 text-[13px] text-grey-500">They see this right away, by email and in their tracker.</p>
+          <div className="mt-4 grid grid-cols-2 gap-2">
+            {presets.map((p) => {
+              const sent = app.signals.some((s) => s.kind === p.kind);
+              return (
+                <button
+                  key={p.kind}
+                  disabled={sent || decided}
+                  onClick={() => push(p)}
+                  className={cx(
+                    "flex min-h-11 items-center gap-2 rounded-md border px-3 py-2 text-left text-[13px] leading-tight",
+                    sent || decided ? "border-grey-200 text-grey-400" : "border-grey-300 hover:border-ink",
+                  )}
+                >
+                  {sent ? <Check size={15} strokeWidth={2} className="shrink-0" /> : <SignalGlyph kind={p.kind} />}
+                  <span>{p.kind === "viewed" ? "Viewed" : p.text}</span>
+                </button>
+              );
+            })}
           </div>
-          <div className="mt-4 rounded-lg border border-grey-200 bg-grey-50 p-3 sm:p-6">
-            <div className="mx-auto max-w-[620px] bg-paper p-6 shadow-[0_1px_2px_rgba(0,0,0,0.06)] sm:p-10">
-              <p className="font-display text-[22px] font-semibold">{app.candidate.name}</p>
-              <p className="text-[12px] text-grey-600">
-                {app.candidate.email} | {app.candidate.phone} | {app.candidate.city}
+          <div className="mt-4 flex flex-col gap-2 border-t border-grey-200 pt-4">
+            {decided ? (
+              <p className="text-[14px] text-grey-600">
+                {app.status === "declined" ? "Decision shared: not moving forward." : "Offer stage. Share the offer details by email."}
               </p>
-              <ResumeSection title="Education">
-                <p className="font-medium">{app.candidate.college}</p>
-                <p className="text-grey-600">B.Tech, Computer Science, {app.candidate.gradYear}. CGPA 8.4</p>
-              </ResumeSection>
-              <ResumeSection title="Experience">
-                <p className="font-medium">Software Intern, Zeta</p>
-                <p className="text-grey-600">May to July 2025</p>
-                <ul className="mt-1 list-disc pl-4 text-grey-700">
-                  <li>Rebuilt the card controls screen in React, cutting load time from 2.1s to 0.8s</li>
-                  <li>Wrote 40 component tests and added them to CI</li>
-                </ul>
-              </ResumeSection>
-              <ResumeSection title="Projects">
-                <p className="font-medium">Hostel mess feedback app</p>
-                <ul className="mt-1 list-disc pl-4 text-grey-700">
-                  <li>React and Firebase app used by 1,200 students for daily menu ratings</li>
-                </ul>
-              </ResumeSection>
-              <ResumeSection title="Skills">
-                <p className="text-grey-700">TypeScript, React, Node.js, PostgreSQL, Figma</p>
-              </ResumeSection>
-            </div>
+            ) : confirmReject ? (
+              <div className="space-y-3">
+                <Field label="Reason, only your team sees this">
+                  <Select defaultValue="skills">
+                    <option value="skills">Skills don't match the role</option>
+                    <option value="experience">Not enough experience yet</option>
+                    <option value="location">Location or availability</option>
+                    <option value="filled">Role filled</option>
+                  </Select>
+                </Field>
+                <p className="text-[13px] text-grey-600">{first} will see: “The team decided not to move forward with your application.”</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="danger"
+                    onClick={() => {
+                      push({ kind: "decision", text: "Decision shared" }, { status: "declined" });
+                      setConfirmReject(false);
+                    }}
+                  >
+                    Send decision
+                  </Button>
+                  <Button variant="ghost" onClick={() => setConfirmReject(false)}>
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <>
+                <Button onClick={advance}>{STAGES[idx + 1]?.key === "decision" ? "Move to decision: offer" : `Move to ${STAGES[idx + 1].label}`}</Button>
+                <Button variant="secondary" onClick={() => setConfirmReject(true)}>
+                  Not moving forward
+                </Button>
+              </>
+            )}
           </div>
         </section>
 
-        {/* actions */}
-        <aside className="order-1 space-y-6 lg:order-2">
-          <section className="rounded-lg border border-grey-200 p-5">
-            <h2 className="font-sans text-[14px] font-semibold tracking-normal">Tell {app.candidate.name.split(" ")[0]} what's happening</h2>
-            <p className="mt-1 text-[13px] text-grey-500">They see this instantly, by email and in their tracker.</p>
-            <div className="mt-4 grid grid-cols-2 gap-2">
-              {presets.map((p) => {
-                const sent = app.signals.some((s) => s.kind === p.kind);
-                return (
-                  <button
-                    key={p.kind}
-                    disabled={sent}
-                    onClick={() => push(p)}
-                    className={cx(
-                      "flex items-center gap-2 rounded-md border p-2 text-left text-[13px] leading-tight",
-                      sent ? "border-grey-200 text-grey-400" : "border-grey-300 hover:border-ink",
-                    )}
-                  >
-                    <SignalIcon kind={p.kind} />
-                    <span>{p.kind === "viewed" ? "Viewed" : p.text}</span>
-                  </button>
-                );
-              })}
-            </div>
-            <div className="mt-4 flex flex-col gap-2 border-t border-grey-200 pt-4">
-              {idx < STAGES.length - 1 && app.status !== "declined" ? (
-                <Button onClick={advance}>Move to {STAGES[idx + 1].label}</Button>
-              ) : (
-                <p className="text-[14px] text-grey-600">{app.status === "declined" ? "Decision shared: not moving forward." : "Final stage."}</p>
-              )}
-              {app.status !== "declined" &&
-                (confirmReject ? (
-                  <div className="rounded-md border border-grey-300 p-3">
-                    <Field label="Reason (only your team sees this)">
-                      <Select defaultValue="skills">
-                        <option value="skills">Skills don't match the role</option>
-                        <option value="experience">Not enough experience yet</option>
-                        <option value="location">Location or availability</option>
-                        <option value="filled">Role filled</option>
-                      </Select>
-                    </Field>
-                    <div className="mt-3 flex gap-2">
-                      <Button
-                        variant="danger"
-                        onClick={() => {
-                          push({ kind: "decision", text: "Decision shared" }, { status: "declined", stage: "decision" });
-                          setConfirmReject(false);
-                        }}
-                      >
-                        Send decision
-                      </Button>
-                      <Button variant="ghost" onClick={() => setConfirmReject(false)}>
-                        Cancel
-                      </Button>
-                    </div>
-                  </div>
-                ) : (
-                  <Button variant="secondary" onClick={() => setConfirmReject(true)}>
-                    Not moving forward
-                  </Button>
-                ))}
-            </div>
-          </section>
+        <section className="lg:col-start-1 lg:row-span-4 lg:row-start-1">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-[18px] font-semibold">Resume</h2>
+            <button className="inline-flex min-w-0 items-center gap-1.5 py-2 text-[13px] text-grey-700 hover:text-ink">
+              <Download size={14} className="shrink-0" /> <span className="truncate">{app.resumeFile}</span>
+            </button>
+          </div>
+          <div className="mt-3 rounded-lg border border-grey-200 p-6 sm:p-10">
+            <p className="font-display text-[22px] font-semibold">{app.candidate.name}</p>
+            <p className="text-[12px] text-grey-600">
+              {app.candidate.email} | {app.candidate.phone} | {app.candidate.city}
+            </p>
+            <ResumeSection title="Education">
+              <p className="font-medium">{app.candidate.college}</p>
+              <p className="text-grey-600">B.Tech, Computer Science, {app.candidate.gradYear}. CGPA 8.4</p>
+            </ResumeSection>
+            <ResumeSection title="Experience">
+              <p className="font-medium">Software Intern, Zeta</p>
+              <p className="text-grey-600">May to July 2025</p>
+              <ul className="mt-1 list-disc pl-4 text-grey-700">
+                <li>Rebuilt the card controls screen in React, cutting load time from 2.1s to 0.8s</li>
+                <li>Wrote 40 component tests and added them to CI</li>
+              </ul>
+            </ResumeSection>
+            <ResumeSection title="Projects">
+              <p className="font-medium">Hostel mess feedback app</p>
+              <ul className="mt-1 list-disc pl-4 text-grey-700">
+                <li>React and Firebase app used by 1,200 students for daily menu ratings</li>
+              </ul>
+            </ResumeSection>
+            <ResumeSection title="Skills">
+              <p className="text-grey-700">TypeScript, React, Node.js, PostgreSQL, Figma</p>
+            </ResumeSection>
+          </div>
+        </section>
 
-          <section className="rounded-lg border border-grey-200 p-5">
-            <h2 className="font-sans text-[14px] font-semibold tracking-normal">Details</h2>
-            <dl className="mt-3 space-y-2.5 text-[14px]">
+        <section className={cx(card, "lg:col-start-2")}>
+          <h2 className={h2}>Details</h2>
+          <dl className="mt-3 space-y-2.5 text-[14px]">
+            <div className="flex items-center gap-2.5">
+              <Mail size={14} className="shrink-0 text-grey-500" />
+              <span className="truncate">{app.candidate.email}</span>
+            </div>
+            <div className="flex items-center gap-2.5">
+              <Phone size={14} className="shrink-0 text-grey-500" />
+              <span className="tnum">{app.candidate.phone}</span>
+            </div>
+            {app.candidate.linkedin && (
               <div className="flex items-center gap-2.5">
-                <Mail size={14} className="text-grey-500" />
-                <span className="truncate">{app.candidate.email}</span>
+                <ExternalLink size={14} className="shrink-0 text-grey-500" />
+                <span className="truncate">{app.candidate.linkedin}</span>
               </div>
-              <div className="flex items-center gap-2.5">
-                <Phone size={14} className="text-grey-500" />
-                <span className="tnum">{app.candidate.phone}</span>
-              </div>
-              {app.candidate.linkedin && (
-                <div className="flex items-center gap-2.5">
-                  <ExternalLink size={14} className="text-grey-500" />
-                  <span className="truncate">{app.candidate.linkedin}</span>
-                </div>
-              )}
-            </dl>
-            {app.candidate.note && (
-              <p className="mt-4 border-t border-grey-200 pt-3 text-[14px] text-grey-700">“{app.candidate.note}”</p>
             )}
-          </section>
+          </dl>
+          {app.candidate.note && <p className="mt-4 border-t border-grey-200 pt-3 text-[14px] text-grey-700">“{app.candidate.note}”</p>}
+        </section>
 
-          <section className="rounded-lg border border-grey-200 p-5">
-            <h2 className="font-sans text-[14px] font-semibold tracking-normal">Notes</h2>
-            <p className="mt-1 text-[13px] text-grey-500">Only your team sees these.</p>
-            <ul className="mt-3 space-y-3">
-              {notes.map((n, i) => (
-                <li key={i} className="text-[14px]">
-                  <p>{n.text}</p>
-                  <p className="tnum text-[12px] text-grey-500">Priya Nair, {formatDateTime(n.at)}</p>
-                </li>
-              ))}
-            </ul>
-            <form
-              className="mt-3"
-              onSubmit={(e) => {
-                e.preventDefault();
-                if (!note.trim()) return;
-                setNotes([...notes, { text: note, at: new Date().toISOString() }]);
-                setNote("");
-              }}
-            >
-              <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note" className="min-h-16" />
-              <Button variant="secondary" className="mt-2 h-8 px-4 text-[13px]">
-                Save note
-              </Button>
-            </form>
-          </section>
+        <section className={cx(card, "lg:col-start-2")}>
+          <h2 className={h2}>Notes</h2>
+          <p className="mt-1 text-[13px] text-grey-500">Only your team sees these.</p>
+          <ul className="mt-3 space-y-3">
+            {notes.map((n, i) => (
+              <li key={i} className="text-[14px]">
+                <p>{n.text}</p>
+                <p className="tnum text-[12px] text-grey-500">Priya Nair, {formatDateTime(n.at)}</p>
+              </li>
+            ))}
+          </ul>
+          <form
+            className="mt-3"
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!note.trim()) return;
+              setNotes([...notes, { text: note.trim(), at: NOW.toISOString() }]);
+              setNote("");
+            }}
+          >
+            <Textarea value={note} onChange={(e) => setNote(e.target.value)} placeholder="Add a note" className="min-h-16" />
+            <Button variant="secondary" className="mt-2 h-9 px-4 text-[13px]" disabled={!note.trim()}>
+              Save note
+            </Button>
+          </form>
+        </section>
 
-          <section>
-            <h2 className="font-sans text-[14px] font-semibold tracking-normal">What {app.candidate.name.split(" ")[0]} sees</h2>
-            <div className="mt-4">
-              <ActivityFeed signals={app.signals} />
-            </div>
-          </section>
-        </aside>
+        <section className="lg:col-start-2">
+          <h2 className={h2}>What {first} sees</h2>
+          <div className="mt-4">
+            <ActivityFeed signals={app.signals} />
+          </div>
+        </section>
       </div>
     </div>
   );
@@ -520,13 +521,13 @@ export function Team() {
         className="mt-8 flex flex-col gap-3 rounded-lg border border-grey-200 p-5 sm:flex-row sm:items-end"
         onSubmit={(e) => {
           e.preventDefault();
-          if (email) setSent([...sent, email]);
+          setSent([...sent, email]);
           setEmail("");
         }}
       >
         <div className="flex-1">
           <Field label="Invite by email">
-            <Input type="email" value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@kitelabs.in" />
+            <Input type="email" required value={email} onChange={(e) => setEmail(e.target.value)} placeholder="name@kitelabs.in" />
           </Field>
         </div>
         <div className="sm:w-44">
@@ -540,12 +541,12 @@ export function Team() {
         <Button>Send invite</Button>
       </form>
       <ul className="mt-8 divide-y divide-grey-200 border-y border-grey-200">
-        {[...members, ...sent.map((e) => [e.split("@")[0], e, "Recruiter", "Invite sent"])].map(([n, e, r, s]) => (
+        {[...members, ...sent.map((e) => [e, e, "Recruiter", "Invite sent"])].map(([n, e, r, s]) => (
           <li key={e} className="flex items-center gap-3 py-4">
-            <Initials name={n} />
+            <Initials name={n === e ? e.slice(0, 1).toUpperCase() : n} />
             <div className="min-w-0 flex-1">
-              <p className="font-medium">{n}</p>
-              <p className="truncate text-[13px] text-grey-500">{e}</p>
+              <p className="truncate font-medium">{n}</p>
+              {n !== e && <p className="truncate text-[13px] text-grey-500">{e}</p>}
             </div>
             <span className="hidden text-[14px] text-grey-700 sm:block">{r}</span>
             <span className={cx("w-24 text-right text-[13px]", s === "Active" ? "text-grey-500" : "font-medium")}>{s}</span>
@@ -558,22 +559,27 @@ export function Team() {
 
 export function NewJob() {
   const nav = useNavigate();
+  const [title, setTitle] = useState("");
+  const [tried, setTried] = useState(false);
   return (
     <div className="mx-auto max-w-2xl">
-      <Link to="/r/jobs" className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to="/r/jobs" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> Jobs
       </Link>
       <h1 className="mt-6 text-[28px] font-semibold">New job</h1>
       <p className="mt-1 text-grey-600">Candidates see this exactly as written. Every applicant must hear back within 40 hours.</p>
       <form
+        noValidate
         className="mt-8 space-y-5"
         onSubmit={(e) => {
           e.preventDefault();
-          nav("/r/jobs");
+          setTried(true);
+          if (title.trim()) nav("/r/jobs");
         }}
       >
         <Field label="Title">
-          <Input placeholder="Frontend Engineer" required />
+          <Input value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Frontend Engineer" className={tried && !title.trim() ? "border-bad" : ""} />
+          {tried && !title.trim() && <span className="mt-1.5 block text-[13px] text-bad">Add a job title. Candidates see it first.</span>}
         </Field>
         <div className="grid gap-4 sm:grid-cols-2">
           <Field label="Team">

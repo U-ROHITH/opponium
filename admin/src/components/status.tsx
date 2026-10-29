@@ -1,4 +1,4 @@
-import { Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, ArrowRight, Flag } from "lucide-react";
+import { X, Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, ArrowRight, Flag } from "lucide-react";
 import type { Application, AppStatus, Signal, SignalKind, StageKey } from "../data/types";
 import { STAGES } from "../data/mock";
 import { slaState, slaText } from "../lib/sla";
@@ -22,7 +22,7 @@ export function StatusChip({ status }: { status: AppStatus }) {
         ? "border-grey-300 text-grey-600"
         : "border-grey-300 text-ink";
   return (
-    <span className={cx("inline-flex h-6 items-center rounded-full border px-2.5 text-[12px] font-medium", tone)}>
+    <span className={cx("inline-flex h-6 w-fit shrink-0 items-center self-start rounded-full border px-2.5 text-[12px] font-medium", tone)}>
       {statusLabel[status]}
     </span>
   );
@@ -31,8 +31,9 @@ export function StatusChip({ status }: { status: AppStatus }) {
 export function SlaLabel({ app, className }: { app: Application; className?: string }) {
   const state = slaState(app);
   const text = slaText(app);
+  const late = state === "replied" && new Date(app.firstReplyAt!).getTime() > new Date(app.replyDueAt).getTime();
   const map = {
-    replied: { cls: "text-grey-500", icon: <Check size={14} strokeWidth={2} /> },
+    replied: { cls: late ? "text-warn" : "text-grey-500", icon: <Check size={14} strokeWidth={2} /> },
     on_track: { cls: "text-grey-700", icon: <Clock size={14} strokeWidth={1.75} /> },
     due_soon: { cls: "text-warn", icon: <Clock size={14} strokeWidth={2.25} /> },
     overdue: { cls: "text-bad", icon: <CircleAlert size={14} strokeWidth={2.25} /> },
@@ -49,8 +50,10 @@ export function stageIndex(key: StageKey) {
   return STAGES.findIndex((s) => s.key === key);
 }
 
+const ended = (status?: AppStatus) => status === "declined" || status === "withdrawn";
+
 /** Five small segments showing how far an application has moved. */
-export function MiniProgress({ stage, closed }: { stage: StageKey; closed?: boolean }) {
+export function MiniProgress({ stage, status }: { stage: StageKey; status?: AppStatus }) {
   const idx = stageIndex(stage);
   return (
     <span className="inline-flex items-center gap-1" aria-label={`Stage ${idx + 1} of ${STAGES.length}`}>
@@ -59,7 +62,7 @@ export function MiniProgress({ stage, closed }: { stage: StageKey; closed?: bool
           key={s.key}
           className={cx(
             "h-1.5 w-5 rounded-full",
-            i < idx || (closed && i === idx) ? "bg-ink" : i === idx ? "bg-grey-500" : "bg-grey-200",
+            i < idx || (status === "offer" && i === idx) ? "bg-ink" : i === idx ? (ended(status) ? "bg-grey-300" : "bg-grey-500") : "bg-grey-200",
           )}
         />
       ))}
@@ -68,16 +71,28 @@ export function MiniProgress({ stage, closed }: { stage: StageKey; closed?: bool
 }
 
 /** Ordered list of stages. Horizontal on wide screens, vertical on phones. */
-export function Stepper({ stage, closed }: { stage: StageKey; closed?: boolean }) {
+export function Stepper({ stage, status }: { stage: StageKey; status?: AppStatus }) {
   const idx = stageIndex(stage);
+  const stopped = ended(status);
   return (
     <ol className="grid gap-0 sm:grid-cols-5">
       {STAGES.map((s, i) => {
-        const done = i < idx || (closed && i === idx);
-        const current = i === idx && !closed;
+        const done = i < idx || (status === "offer" && i === idx);
+        const current = i === idx && !done && !stopped;
+        const endedHere = i === idx && stopped;
+        const sub = done
+          ? "Completed"
+          : current
+            ? "In progress"
+            : endedHere
+              ? status === "withdrawn"
+                ? "Withdrawn"
+                : "Not moving forward"
+              : stopped
+                ? "Not reached"
+                : `Step ${i + 1}`;
         return (
           <li key={s.key} className="relative flex gap-3 pb-5 last:pb-0 sm:block sm:pb-0 sm:pr-3">
-            {/* connector */}
             {i < STAGES.length - 1 && (
               <span
                 aria-hidden
@@ -92,18 +107,17 @@ export function Stepper({ stage, closed }: { stage: StageKey; closed?: boolean }
                 "relative z-10 flex h-6 w-6 shrink-0 items-center justify-center rounded-full border",
                 done && "border-ink bg-ink text-paper",
                 current && "border-ink bg-paper",
-                !done && !current && "border-grey-300 bg-paper",
+                endedHere && "border-grey-400 bg-grey-100 text-grey-600",
+                !done && !current && !endedHere && "border-grey-300 bg-paper",
               )}
             >
-              {done ? <Check size={13} strokeWidth={3} /> : current ? <span className="h-2.5 w-2.5 rounded-full bg-ink" /> : null}
+              {done ? <Check size={13} strokeWidth={3} /> : current ? <span className="h-2.5 w-2.5 rounded-full bg-ink" /> : endedHere ? <X size={12} strokeWidth={2.5} /> : null}
             </span>
             <span className="block sm:mt-3">
-              <span className={cx("block text-[14px] leading-snug", current ? "font-semibold" : done ? "text-ink" : "text-grey-500")}>
+              <span className={cx("block text-[14px] leading-snug", current || endedHere ? "font-semibold" : done ? "text-ink" : "text-grey-500")}>
                 {s.label}
               </span>
-              <span className="mt-0.5 block text-[12px] text-grey-500">
-                {done ? "Completed" : current ? "In progress" : `Step ${i + 1}`}
-              </span>
+              <span className="mt-0.5 block text-[12px] text-grey-500">{sub}</span>
             </span>
           </li>
         );
@@ -122,6 +136,11 @@ const signalIcon: Record<SignalKind, typeof Eye> = {
   moved: ArrowRight,
   decision: Flag,
 };
+
+export function SignalGlyph({ kind }: { kind: SignalKind }) {
+  const Icon = signalIcon[kind];
+  return <Icon size={15} strokeWidth={1.75} className="shrink-0" />;
+}
 
 export function SignalIcon({ kind, active }: { kind: SignalKind; active?: boolean }) {
   const Icon = signalIcon[kind];

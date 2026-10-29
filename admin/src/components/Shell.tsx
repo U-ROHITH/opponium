@@ -6,19 +6,18 @@ import { Initials, cx } from "./ui";
 import { pipeline } from "../data/mock";
 import { accessRequests } from "../data/admin";
 import { slaState } from "../lib/sla";
+import { useAdminState } from "../state";
 
-const sections: { title?: string; links: [string, string, number?][] }[] = [
+const sections = (pendingRequests: number): { links: [string, string, number?][] }[] => [
   { links: [["/", "Overview"]] },
   {
-    title: "People",
     links: [
       ["/invites", "Invites"],
-      ["/requests", "Access requests", accessRequests.length],
+      ["/requests", "Access requests", pendingRequests],
       ["/users", "Users"],
     ],
   },
   {
-    title: "Hiring",
     links: [
       ["/companies", "Companies"],
       ["/sla", "Reply breaches", pipeline.filter((a) => slaState(a) === "overdue").length],
@@ -26,7 +25,6 @@ const sections: { title?: string; links: [string, string, number?][] }[] = [
     ],
   },
   {
-    title: "System",
     links: [
       ["/audit", "Audit log"],
       ["/settings", "Settings"],
@@ -35,25 +33,26 @@ const sections: { title?: string; links: [string, string, number?][] }[] = [
 ];
 
 const link = ({ isActive }: { isActive: boolean }) =>
-  cx("flex h-8 items-center justify-between rounded-md px-2 text-[14px]", isActive ? "bg-grey-100 font-medium" : "text-grey-700 hover:bg-grey-50 hover:text-ink");
+  cx("flex h-9 items-center justify-between rounded-md px-2 text-[14px]", isActive ? "bg-grey-100 font-medium" : "text-grey-700 hover:bg-grey-50 hover:text-ink");
 
 export function Brand() {
   return (
-    <Link to="/" className="inline-flex items-center gap-2.5">
+    <Link to="/" className="inline-flex min-h-10 items-center gap-2.5">
       <LogoMark className="h-6 w-auto" />
       <Wordmark className="h-[11px] w-auto" />
-      <span className="rounded border border-grey-300 px-1.5 text-[11px] font-medium leading-5 text-grey-600">Admin</span>
+      <span className="rounded border border-grey-300 px-1.5 text-[12px] font-medium leading-5 text-grey-600">Admin</span>
     </Link>
   );
 }
 
 export function Shell() {
   const [open, setOpen] = useState(false);
+  const { decided } = useAdminState();
+  const pending = accessRequests.filter((r) => !decided[r.id]).length;
   const nav = (
-    <nav className="space-y-5">
-      {sections.map((s, i) => (
-        <div key={i}>
-          {s.title && <p className="mb-1 px-2 text-[12px] text-grey-500">{s.title}</p>}
+    <nav className="divide-y divide-grey-200">
+      {sections(pending).map((s, i) => (
+        <div key={i} className="py-3 first:pt-0">
           <div className="space-y-0.5">
             {s.links.map(([to, label, n]) => (
               <NavLink key={to} to={to} end={to === "/"} className={link} onClick={() => setOpen(false)}>

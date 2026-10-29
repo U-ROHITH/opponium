@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams, useSearchParams } from "react-router-dom";
 import { ArrowLeft, Check, FileText, Upload } from "lucide-react";
 import { ActivityFeed, MiniProgress, StatusChip, Stepper } from "../components/status";
 import { Button, ButtonLink, CompanyMark, Field, Input, PageHeader, Select, Textarea, cx } from "../components/ui";
@@ -63,7 +63,7 @@ export function JobDetail() {
   const due = new Date(NOW.getTime() + 40 * 3600_000).toISOString();
   return (
     <div>
-      <Link to="/jobs" className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to="/jobs" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> Jobs
       </Link>
       <div className="mt-6 grid gap-10 lg:grid-cols-[1fr_320px]">
@@ -91,7 +91,7 @@ export function JobDetail() {
             ))}
           </dl>
           <div className="mt-8 max-w-2xl space-y-8">
-            <p className="text-[16px] leading-relaxed text-grey-800">{job.summary}</p>
+            <p className="text-[15px] leading-relaxed text-grey-800">{job.summary}</p>
             <section>
               <h2 className="text-[18px] font-semibold">What you'll do</h2>
               <ul className="mt-3 list-disc space-y-1.5 pl-5 text-grey-700 marker:text-grey-400">
@@ -143,11 +143,25 @@ export function Apply() {
   const [file, setFile] = useState<string | null>("Aarav_Mehta_Resume.pdf");
   const [review, setReview] = useState(false);
   const [note, setNote] = useState("");
+  const existing = applications.find((a) => a.jobId === job.id);
+
+  if (existing)
+    return (
+      <div className="mx-auto max-w-xl">
+        <h1 className="text-[28px] font-semibold">You've already applied</h1>
+        <p className="mt-2 text-grey-600">
+          You applied to {job.title} at {job.company} {relative(existing.appliedAt)}. You can apply to each role once.
+        </p>
+        <ButtonLink to={`/applications/${existing.id}`} className="mt-6">
+          Track application
+        </ButtonLink>
+      </div>
+    );
 
   if (review)
     return (
       <div className="mx-auto max-w-xl">
-        <button onClick={() => setReview(false)} className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+        <button onClick={() => setReview(false)} className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
           <ArrowLeft size={15} /> Edit details
         </button>
         <h1 className="mt-6 text-[28px] font-semibold">Check and send</h1>
@@ -175,7 +189,7 @@ export function Apply() {
           After you send, you can't edit your application once the team has viewed it.
         </p>
         <div className="mt-6 flex gap-3">
-          <Button onClick={() => nav("/applications/a-5002/submitted")}>Send application</Button>
+          <Button onClick={() => nav(`/applications/new/submitted?job=${job.id}`)}>Send application</Button>
           <Button variant="secondary" onClick={() => setReview(false)}>
             Back
           </Button>
@@ -185,7 +199,7 @@ export function Apply() {
 
   return (
     <div className="mx-auto max-w-xl">
-      <Link to={`/jobs/${job.id}`} className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to={`/jobs/${job.id}`} className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> {job.title}
       </Link>
       <h1 className="mt-6 text-[28px] font-semibold">Apply to {job.company}</h1>
@@ -198,7 +212,7 @@ export function Apply() {
         }}
       >
         <section>
-          <h2 className="text-[16px] font-semibold">Resume</h2>
+          <h2 className="text-[15px] font-semibold">Resume</h2>
           {file ? (
             <div className="mt-3 flex items-center gap-3 rounded-md border border-grey-300 p-3">
               <FileText size={20} strokeWidth={1.5} className="text-grey-600" />
@@ -206,7 +220,7 @@ export function Apply() {
                 <p className="truncate text-[14px] font-medium">{file}</p>
                 <p className="text-[12px] text-grey-500">PDF, 184 KB, from your profile</p>
               </div>
-              <button type="button" onClick={() => setFile(null)} className="text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
+              <button type="button" onClick={() => setFile(null)} className="py-2 text-[13px] text-grey-600 underline underline-offset-2 hover:text-ink">
                 Replace
               </button>
             </div>
@@ -221,7 +235,7 @@ export function Apply() {
         </section>
 
         <section className="space-y-4">
-          <h2 className="text-[16px] font-semibold">About you</h2>
+          <h2 className="text-[15px] font-semibold">About you</h2>
           <Field label="Full name">
             <Input defaultValue="Aarav Mehta" required />
           </Field>
@@ -268,20 +282,22 @@ export function Apply() {
 }
 
 export function Submitted() {
-  const app = applications[1];
-  const job = jobById(app.jobId);
+  const [params] = useSearchParams();
+  const job = jobById(params.get("job") ?? "j-105");
+  const due = new Date(NOW.getTime() + 40 * 3600_000).toISOString();
   return (
     <div className="mx-auto max-w-xl pt-6">
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-paper">
         <Check size={20} strokeWidth={2.5} />
       </span>
-      <h1 className="mt-6 text-[30px] font-semibold">Application sent</h1>
-      <p className="mt-2 text-[16px] text-grey-700">
-        {job.company} will reply by <span className="tnum font-medium text-ink">{formatDateTime(app.replyDueAt)}</span>. We'll email and text
+      <h1 className="mt-6 text-[28px] font-semibold">Application sent</h1>
+      <p className="mt-2 text-[15px] text-grey-700">
+        {job.company} will reply to your application for {job.title} by{" "}
+        <span className="tnum font-medium text-ink">{formatDateTime(due)}</span>. We'll email and text
         you at each step.
       </p>
       <div className="mt-8 flex gap-3">
-        <ButtonLink to={`/applications/${app.id}`}>Track your status</ButtonLink>
+        <ButtonLink to="/applications/a-5002">Track your status</ButtonLink>
         <ButtonLink to="/jobs" variant="secondary">
           Browse jobs
         </ButtonLink>
@@ -327,7 +343,7 @@ export function Applications() {
                   </div>
                 </div>
                 <div className="pl-14 sm:pl-0">
-                  <MiniProgress stage={a.stage} closed={closed(a.status)} />
+                  <MiniProgress stage={a.stage} status={a.status} />
                   <p className="mt-1.5 text-[13px] text-grey-600">{STAGES.find((s) => s.key === a.stage)!.label}</p>
                 </div>
                 <div className="pl-14 sm:pl-0 sm:text-right">
@@ -347,7 +363,9 @@ export function Applications() {
 
 export function Tracker() {
   const { id } = useParams();
-  const app = applications.find((a) => a.id === id) ?? applications[0];
+  const seed = applications.find((a) => a.id === id) ?? applications[0];
+  const [app, setApp] = useState(seed);
+  const [confirmWithdraw, setConfirmWithdraw] = useState(false);
   const job = jobById(app.jobId);
   const isClosed = closed(app.status);
   const stageIdx = STAGES.findIndex((s) => s.key === app.stage);
@@ -355,7 +373,7 @@ export function Tracker() {
 
   return (
     <div className="mx-auto max-w-3xl">
-      <Link to="/applications" className="inline-flex items-center gap-1.5 text-[14px] text-grey-600 hover:text-ink">
+      <Link to="/applications" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
         <ArrowLeft size={15} /> Applications
       </Link>
 
@@ -363,7 +381,7 @@ export function Tracker() {
         <div className="flex items-center gap-4">
           <CompanyMark name={job.company} size={48} />
           <div>
-            <h1 className="text-[26px] font-semibold">{job.title}</h1>
+            <h1 className="text-[28px] font-semibold">{job.title}</h1>
             <p className="tnum text-grey-600">
               {job.company}, applied {formatDateTime(app.appliedAt)}
             </p>
@@ -385,14 +403,14 @@ export function Tracker() {
             <div className="flex flex-wrap items-baseline justify-between gap-2">
               <p>
                 <span className="text-[14px] text-grey-600">You'll hear back by </span>
-                <span className="tnum font-display text-[20px] font-semibold">{formatDateTime(app.replyDueAt)}</span>
+                <span className="tnum font-display text-[22px] font-semibold">{formatDateTime(app.replyDueAt)}</span>
               </p>
               <span className="tnum text-[13px] text-grey-500">{relative(app.replyDueAt)}, within 40 hours of applying</span>
             </div>
           )}
         </div>
         <div className="px-5 py-6 sm:px-6">
-          <Stepper stage={app.stage} closed={isClosed} />
+          <Stepper stage={app.stage} status={app.status} />
         </div>
       </div>
 
@@ -428,9 +446,33 @@ export function Tracker() {
             </div>
             <p className="mt-1 text-[13px] text-grey-500">Locked after the team viewed it</p>
           </section>
-          {!isClosed && (
-            <button className="text-[14px] text-grey-600 underline underline-offset-2 hover:text-bad">Withdraw application</button>
+          {app.status === "withdrawn" && (
+            <p className="text-[14px] text-grey-700">You withdrew this application. {job.company} has been told.</p>
           )}
+          {!isClosed &&
+            (confirmWithdraw ? (
+              <div className="space-y-3">
+                <p className="text-[14px] text-grey-700">Withdraw from {job.title}? You can't apply to this role again.</p>
+                <div className="flex gap-2">
+                  <Button
+                    variant="danger"
+                    className="h-9 px-4 text-[13px]"
+                    onClick={() =>
+                      setApp({ ...app, status: "withdrawn", signals: [...app.signals, { id: "w", kind: "decision", text: "You withdrew your application", at: NOW.toISOString() }] })
+                    }
+                  >
+                    Withdraw
+                  </Button>
+                  <Button variant="ghost" className="h-9 px-4 text-[13px]" onClick={() => setConfirmWithdraw(false)}>
+                    Keep it
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <button onClick={() => setConfirmWithdraw(true)} className="py-2 text-[14px] text-grey-600 underline underline-offset-2 hover:text-bad">
+                Withdraw application
+              </button>
+            ))}
         </aside>
       </div>
     </div>
