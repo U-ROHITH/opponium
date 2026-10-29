@@ -5,6 +5,47 @@ import { LogoMark, Wordmark } from "./Logo";
 import { C, E, fontCss } from "./theme";
 import { Check, EyeIcon, MotionBlur, Node, type NodeState, STAGES, display, ip, ipScale, ui, useLayout } from "./kit";
 
+/* ---------- S0: "STOP GETTING GHOSTED." (0-44) ---------- */
+
+function S0() {
+  const f = useCurrentFrame(); // 0..44
+  const { v } = useLayout();
+  const words = ["STOP", "GETTING", "GHOSTED."];
+  const size = v ? 190 : 210;
+  const ghost = ip(f, [30, 38], [0, 1], E.inOut);
+  const drift = ip(f, [0, 44], [1, 1.03], E.inOut);
+  return (
+    <AbsoluteFill style={{ background: C.ink, alignItems: "center", justifyContent: "center", transform: `scale(${drift})` }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: v ? "center" : "flex-start", gap: v ? 18 : 6 }}>
+        {(v ? [[0], [1], [2]] : [[0, 1], [2]]).map((row, ri) => (
+          <div key={ri} style={{ display: "flex", gap: size * 0.28 }}>
+            {row.map((i) => {
+              const at = i * 9;
+              const s = ip(f, [at, at + 7], [1.16, 1], E.expoOut);
+              const isGhost = i === 2;
+              return (
+                <div
+                  key={i}
+                  style={{
+                    ...display(size, 700, { letterSpacing: "-0.02em" }),
+                    color: C.paper,
+                    opacity: f >= at ? (isGhost ? 1 - ghost * 0.84 : 1) : 0,
+                    filter: isGhost ? `blur(${ghost * 1.5}px)` : undefined,
+                    transform: `scale(${s}) translateY(${isGhost ? -ghost * 14 : 0}px)`,
+                    transformOrigin: "50% 60%",
+                  }}
+                >
+                  {words[i]}
+                </div>
+              );
+            })}
+          </div>
+        ))}
+      </div>
+    </AbsoluteFill>
+  );
+}
+
 /* ---------- S1: type slam "48" / "hours." (0-29) ---------- */
 
 /** Where the period of "hours." sits. S2 picks the dot up from here. */
@@ -560,8 +601,9 @@ function S8S9({ url = "opponium.com" }: { url?: string }) {
   const rise = ip(f, [45, 57], [0, 1], E.expoOut);
   const lift = rise * (v ? 160 : 120);
   const drift = ip(f, [45, 104], [1, 1.015], E.inOut);
-  const lineWords = ["Apply", "once.", "Hear", "back", "within", "48", "hours."];
-  const tail = ip(f, [67, 79], [0, 1], E.expoOut);
+  const tagWords = ["TRANSPARENCY", "AT", "ITS", "PEAK"];
+  const line = ip(f, [62, 74], [0, 1], E.expoOut);
+  const tail = ip(f, [70, 82], [0, 1], E.expoOut);
   const dot = { x: L.markX + LOGO.dot.x * L.s, y: L.markY + LOGO.dot.y * L.s, r: LOGO.dot.r * L.s };
   return (
     <AbsoluteFill style={{ background: C.ink }}>
@@ -604,26 +646,39 @@ function S8S9({ url = "opponium.com" }: { url?: string }) {
             position: "absolute",
             left: v ? 90 : 0,
             right: v ? 90 : 0,
-            top: v ? L.wordY + L.wordH + 130 : H / 2 + 170,
+            top: v ? L.wordY + L.wordH + 110 : H / 2 + 175,
             display: "flex",
             flexWrap: "wrap",
             justifyContent: "center",
-            columnGap: v ? 22 : 24,
-            rowGap: 6,
+            columnGap: v ? 26 : 30,
+            rowGap: 10,
           }}
         >
-          {lineWords.map((w, i) => {
+          {tagWords.map((w, i) => {
             const t = ip(f, [47 + i * 3, 59 + i * 3], [0, 1], E.expoOut);
             return (
-              <span key={i} style={{ ...display(84, 600, { color: C.paper }), opacity: t, transform: `translateY(${(1 - t) * 16}px)`, filter: `blur(${(1 - t) * 8}px)` }}>
+              <span
+                key={i}
+                style={{
+                  ...display(v ? 84 : 76, 700, { color: C.paper, letterSpacing: "0.04em" }),
+                  flexBasis: v && i === 0 ? "100%" : undefined,
+                  textAlign: "center",
+                  opacity: t,
+                  transform: `translateY(${(1 - t) * 16}px)`,
+                  filter: `blur(${(1 - t) * 8}px)`,
+                }}
+              >
                 {w}
               </span>
             );
           })}
         </div>
-        <div style={{ position: "absolute", left: 0, right: 0, top: v ? L.wordY + L.wordH + 440 : H / 2 + 300, display: "flex", justifyContent: "center", gap: 28, opacity: tail, transform: `translateY(${(1 - tail) * 12}px)` }}>
-          <span style={ui(40, 500, { color: C.paper })}>{url}</span>
-          <span style={ui(40, 500, { color: "#A1A1A1" })}>Invite only.</span>
+        <div style={{ position: "absolute", left: v ? 90 : 0, right: v ? 90 : 0, top: v ? L.wordY + L.wordH + 350 : H / 2 + 290, textAlign: "center", opacity: line, transform: `translateY(${(1 - line) * 12}px)`, ...display(v ? 46 : 44, 500, { color: "#BDBDBD", lineHeight: 1.2 }) }}>
+          Apply once. Hear back within 48 hours.
+        </div>
+        <div style={{ position: "absolute", left: 0, right: 0, top: v ? L.wordY + L.wordH + 520 : H / 2 + 380, display: "flex", flexWrap: "wrap", justifyContent: "center", columnGap: 28, rowGap: 8, opacity: tail, transform: `translateY(${(1 - tail) * 12}px)` }}>
+          <span style={ui(38, 600, { color: C.paper })}>{url}</span>
+          <span style={ui(38, 500, { color: "#A1A1A1" })}>Invite only. Limited spots.</span>
         </div>
       </AbsoluteFill>
     </AbsoluteFill>
@@ -633,15 +688,18 @@ function S8S9({ url = "opponium.com" }: { url?: string }) {
 /* ---------- Timeline ---------- */
 
 export const SHOTS: [number, number, (p: { url?: string }) => React.ReactElement][] = [
-  [0, 30, S1],
-  [30, 30, S2],
-  [60, 30, S3],
-  [90, 60, S4],
-  [150, 60, S5],
-  [210, 60, S6],
-  [270, 75, S7],
-  [345, 105, S8S9],
+  [0, 45, S0],
+  [45, 30, S1],
+  [75, 30, S2],
+  [105, 30, S3],
+  [135, 60, S4],
+  [195, 60, S5],
+  [255, 60, S6],
+  [315, 75, S7],
+  [390, 105, S8S9],
 ];
+
+export const DURATION = 495;
 
 export function Film({ url }: { url?: string }) {
   return (
