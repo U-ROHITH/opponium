@@ -539,7 +539,7 @@ const lockup = (W: number, H: number, v: boolean) => {
   return { s, markX: x0, markY: H / 2 - markH / 2, markW, markH, wordX: x0 + markW + 54, wordY: H / 2 - wordH / 2, wordH, wordW };
 };
 
-function S8S9() {
+function S8S9({ url = "opponium.com" }: { url?: string }) {
   const f = useCurrentFrame(); // 0..104 (345-449)
   const { W, H, cx, v } = useLayout();
   const g = ringGeom(W, H, v);
@@ -622,7 +622,7 @@ function S8S9() {
           })}
         </div>
         <div style={{ position: "absolute", left: 0, right: 0, top: v ? L.wordY + L.wordH + 440 : H / 2 + 300, display: "flex", justifyContent: "center", gap: 28, opacity: tail, transform: `translateY(${(1 - tail) * 12}px)` }}>
-          <span style={ui(40, 500, { color: C.paper })}>opponium.vercel.app</span>
+          <span style={ui(40, 500, { color: C.paper })}>{url}</span>
           <span style={ui(40, 500, { color: "#A1A1A1" })}>Invite only.</span>
         </div>
       </AbsoluteFill>
@@ -632,7 +632,7 @@ function S8S9() {
 
 /* ---------- Timeline ---------- */
 
-export const SHOTS: [number, number, () => React.ReactElement][] = [
+export const SHOTS: [number, number, (p: { url?: string }) => React.ReactElement][] = [
   [0, 30, S1],
   [30, 30, S2],
   [60, 30, S3],
@@ -643,14 +643,14 @@ export const SHOTS: [number, number, () => React.ReactElement][] = [
   [345, 105, S8S9],
 ];
 
-export function Film() {
+export function Film({ url }: { url?: string }) {
   return (
     <AbsoluteFill style={{ background: C.paper }}>
       <style>{fontCss}</style>
       {SHOTS.map(([from, dur, Shot]) => (
         <Sequence key={from} from={from} durationInFrames={dur} layout="none">
           <AbsoluteFill>
-            <Shot />
+            <Shot url={url} />
           </AbsoluteFill>
         </Sequence>
       ))}
