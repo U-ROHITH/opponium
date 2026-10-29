@@ -1,68 +1,52 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
+@import "tailwindcss";
 
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
+@theme {
+  --font-sans: "IBM Plex Sans", ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Jost", "IBM Plex Sans", ui-sans-serif, sans-serif;
 
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
+  --color-ink: #000000;
+  --color-paper: #ffffff;
+  --color-grey-50: oklch(0.985 0 0);
+  --color-grey-100: oklch(0.967 0 0);
+  --color-grey-200: oklch(0.92 0 0);
+  --color-grey-300: oklch(0.87 0 0);
+  --color-grey-400: oklch(0.71 0 0);
+  --color-grey-500: oklch(0.556 0 0);
+  --color-grey-600: oklch(0.46 0 0);
+  --color-grey-700: oklch(0.37 0 0);
+  --color-grey-800: oklch(0.27 0 0);
 
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
-body {
-  margin: 0;
-  display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  --color-ok: oklch(0.52 0.12 150);
+  --color-ok-soft: oklch(0.96 0.03 150);
+  --color-warn: oklch(0.58 0.13 70);
+  --color-warn-soft: oklch(0.97 0.04 85);
+  --color-bad: oklch(0.53 0.19 27);
+  --color-bad-soft: oklch(0.97 0.02 27);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
-}
-
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
-  cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
-}
-
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
+@layer base {
+  html {
+    -webkit-text-size-adjust: 100%;
   }
-  a:hover {
-    color: #747bff;
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-size: 15px;
+    line-height: 1.5;
   }
-  button {
-    background-color: #f9f9f9;
+  h1, h2, h3 {
+    @apply font-display;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+  }
+  ::selection {
+    background: #000;
+    color: #fff;
+  }
+  :focus-visible {
+    outline: 2px solid #000;
+    outline-offset: 2px;
+  }
+  .tnum {
+    font-variant-numeric: tabular-nums;
   }
 }
