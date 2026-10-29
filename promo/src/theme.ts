@@ -12,6 +12,7 @@ export const C = {
   g600: "#6b6b6b",
   g700: "#4a4a4a",
   ok: "#1f8a4c",
+  bad: "#c22826",
   warn: "#b07a12",
 };
 

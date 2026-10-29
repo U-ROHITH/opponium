@@ -518,7 +518,7 @@ function S7() {
   const circ = 2 * Math.PI * g.r;
   const label = ip(f, [2, 14], [0, 1], E.expoOut);
   const textLeft = v ? 90 : cx - 200;
-  const textTop = v ? 1140 : cy - 120;
+  const textTop = v ? 1120 : cy - 170;
   return (
     <AbsoluteFill style={{ background: C.paper, perspective: 1800 }}>
       <AbsoluteFill style={{ transform: `scale(${cam}) rotateY(${ry}deg)`, transformOrigin: `${cx}px ${cy}px` }}>
@@ -538,22 +538,74 @@ function S7() {
           <circle cx={head.x} cy={head.y} r={22} fill={C.ink} stroke={C.paper} strokeWidth={6} />
         </svg>
         <div style={{ position: "absolute", left: g.x - 200, width: 400, top: g.y - 50, textAlign: "center" }}>
-          <div style={display(v ? 96 : 84, 600, { color: C.ink })}>48h</div>
+          <div style={display(v ? 96 : 84, 600, { color: C.ink, fontVariantNumeric: "tabular-nums" })}>{Math.round(draw * 48)}h</div>
         </div>
         <div style={{ position: "absolute", left: textLeft, top: textTop, opacity: label * ip(f, [75, 83], [1, 0], E.expoIn) }}>
-          <div style={ui(v ? 42 : 46, 500, { color: C.g500 })}>You'll hear back by</div>
+          <div style={display(v ? 64 : 68, 600, { color: C.ink })}>Apply now.</div>
         </div>
-        <div style={{ position: "absolute", left: textLeft - 4, top: textTop + (v ? 70 : 78) }}>
-          {v ? (
-            <>
-              <Odometer text="Sat 31 Oct," f={f} start={2} size={128} />
-              <Odometer text="20:26" f={f} start={18} size={128} />
-            </>
-          ) : (
-            <Odometer text="Sat 31 Oct, 20:26" f={f} start={2} size={120} />
-          )}
+        <div style={{ position: "absolute", left: textLeft - 4, top: textTop + (v ? 96 : 100) }}>
+          <Odometer text="You'll hear back" f={f} start={2} size={v ? 104 : 108} />
+          <Odometer text="in 48 hours." f={f} start={14} size={v ? 104 : 108} />
         </div>
       </AbsoluteFill>
+    </AbsoluteFill>
+  );
+}
+
+/* ---------- SF: the answer, either way: green tick, red cross (390-419) ---------- */
+
+export const flashRing = (W: number, H: number, v: boolean) => ({ x: W / 2, y: H / 2 - (v ? 80 : 50), r: v ? 250 : 220 });
+
+function SFlash() {
+  const f = useCurrentFrame(); // 0..29
+  const { W, H, v } = useLayout();
+  const g = flashRing(W, H, v);
+  const yes = f < 15;
+  const local = yes ? f : f - 15;
+  const pop = ip(local, [0, 6], [1.12, 1], E.expoOut);
+  const draw = ip(local, [1, 7], [0, 1], E.expoOut);
+  const word = ip(local, [3, 9], [0, 1], E.expoOut);
+  const bg = yes ? C.ok : C.bad;
+  const k = g.r * 0.5;
+  // tick and cross as stroked paths, drawn on
+  const tick = `M ${g.x - k * 0.85} ${g.y + k * 0.05} L ${g.x - k * 0.2} ${g.y + k * 0.65} L ${g.x + k * 0.95} ${g.y - k * 0.6}`;
+  const tickLen = k * (Math.hypot(0.65, 0.6) + Math.hypot(1.15, 1.25));
+  return (
+    <AbsoluteFill style={{ background: bg }}>
+      <svg width={W} height={H} style={{ position: "absolute", inset: 0, transform: `scale(${pop})`, transformOrigin: `${g.x}px ${g.y}px` }}>
+        <circle cx={g.x} cy={g.y} r={g.r} fill="none" stroke={C.paper} strokeWidth={14} />
+        {yes ? (
+          <path d={tick} fill="none" stroke={C.paper} strokeWidth={34} strokeLinecap="round" strokeLinejoin="round" strokeDasharray={`${tickLen * draw} ${tickLen}`} />
+        ) : (
+          <>
+            <line x1={g.x - k * 0.7} y1={g.y - k * 0.7} x2={g.x - k * 0.7 + k * 1.4 * draw} y2={g.y - k * 0.7 + k * 1.4 * draw} stroke={C.paper} strokeWidth={34} strokeLinecap="round" />
+            <line
+              x1={g.x + k * 0.7}
+              y1={g.y - k * 0.7}
+              x2={g.x + k * 0.7 - k * 1.4 * ip(local, [3, 9], [0, 1], E.expoOut)}
+              y2={g.y - k * 0.7 + k * 1.4 * ip(local, [3, 9], [0, 1], E.expoOut)}
+              stroke={C.paper}
+              strokeWidth={34}
+              strokeLinecap="round"
+              opacity={local >= 3 ? 1 : 0}
+            />
+          </>
+        )}
+      </svg>
+      <div
+        style={{
+          position: "absolute",
+          left: 0,
+          right: 0,
+          top: g.y + g.r + (v ? 90 : 60),
+          textAlign: "center",
+          opacity: word,
+          transform: `translateY(${(1 - word) * 14}px)`,
+          ...display(v ? 110 : 96, 700, { color: C.paper, letterSpacing: "-0.02em" }),
+        }}
+      >
+        {yes ? "Selected." : "Not selected."}
+      </div>
     </AbsoluteFill>
   );
 }
@@ -583,7 +635,7 @@ const lockup = (W: number, H: number, v: boolean) => {
 function S8S9({ url = "opponium.com" }: { url?: string }) {
   const f = useCurrentFrame(); // 0..104 (345-449)
   const { W, H, cx, v } = useLayout();
-  const g = ringGeom(W, H, v);
+  const g = flashRing(W, H, v);
   const L = lockup(W, H, v);
   const m = ip(f, [0, 15], [0, 1], E.inOut);
   const target = { x: L.markX + LOGO.cx * L.s, y: L.markY + LOGO.cy * L.s, r: LOGO.r * L.s, w: LOGO.weight * L.s };
@@ -696,10 +748,11 @@ export const SHOTS: [number, number, (p: { url?: string }) => React.ReactElement
   [195, 60, S5],
   [255, 60, S6],
   [315, 75, S7],
-  [390, 105, S8S9],
+  [390, 30, SFlash],
+  [420, 105, S8S9],
 ];
 
-export const DURATION = 495;
+export const DURATION = 525;
 
 export function Film({ url }: { url?: string }) {
   return (

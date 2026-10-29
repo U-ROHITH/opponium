@@ -17,7 +17,7 @@ from scipy.signal import butter, lfilter, sosfilt
 
 SR = 48000
 FPS = 30
-DUR = 16.5
+DUR = 17.5
 N = int(SR * DUR)
 rng = np.random.default_rng(11)
 L = np.zeros((N, 2))  # music bus
@@ -207,9 +207,16 @@ place(L, riser(0.55), 298, 0.35)
 groove(315, 345, 0.85, filt=1400)
 groove(345, 390, 1.05, filt=3200)
 # Logo (390-495): final chord and tail
-place(L, pad([220.0, 261.63, 329.63, 440.0, 523.25], 3.4, 2400), 405, 0.34)
-place(L, pluck([110.0, 220.0, 329.63], 2.0, 2000), 405, 0.25)
-place(L, bass(55.0, 1.2), 405, 0.4)
+# The answer (390-420): bright "yes" on green, low thud on red, kick on both beats
+place(L, kick(), 390, 0.6)
+place(L, pluck([220.0, 277.18, 329.63, 440.0, 554.37], 0.7, 4200), 390, 0.42)
+place(L, bass(55.0, 0.45), 390, 0.45)
+place(L, kick(punch=1.2), 405, 0.65)
+place(L, bass(41.2, 0.5), 405, 0.5)
+place(L, pluck([110.0, 116.54], 0.5, 900), 405, 0.35)
+place(L, pad([220.0, 261.63, 329.63, 440.0, 523.25], 3.4, 2400), 435, 0.34)
+place(L, pluck([110.0, 220.0, 329.63], 2.0, 2000), 435, 0.25)
+place(L, bass(55.0, 1.2), 435, 0.4)
 
 # ---------------- sound design ----------------
 for fr in (0, 9, 18):
@@ -235,10 +242,13 @@ for k in range(13):
     place(X, tick(2400 + 60 * k, 0.03), 317 + k * 2, 0.18)
 place(X, sub_hit(1.6, 46), 345, 0.9)  # date lands
 place(X, riser(0.5), 375, 0.35)
-place(X, whoosh(0.35, 300, 3000), 388, 0.35)
-place(X, sub_hit(1.9, 44), 405, 1.0)  # logo lands
-place(X, click(3000), 437, 0.25)
-place(X, sub_hit(2.0, 42), 465, 0.5)
+place(X, sub_hit(0.9, 62), 390, 0.6)  # green
+place(X, tick(4200, 0.25), 392, 0.25)
+place(X, sub_hit(1.0, 38), 405, 0.75)  # red
+place(X, whoosh(0.35, 300, 3000), 418, 0.35)
+place(X, sub_hit(1.9, 44), 435, 1.0)  # logo lands
+place(X, click(3000), 467, 0.25)
+place(X, sub_hit(2.0, 42), 495, 0.5)
 
 # ---------------- mix ----------------
 # Duck the music under the big hits (simple sidechain from the sfx bus)
