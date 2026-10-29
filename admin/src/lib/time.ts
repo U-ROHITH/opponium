@@ -1,10 +1,11 @@
 const TZ = "Asia/Kolkata";
 
+/** "1 Jan, 10:00 am": no weekday, 12-hour clock, so 48 hours is easy to count. */
 export function formatDateTime(iso: string) {
   const d = new Date(iso);
-  const day = d.toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", timeZone: TZ });
-  const time = d.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit", hour12: false, timeZone: TZ });
-  return `${day.replace(",", "")}, ${time}`;
+  const day = d.toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: TZ });
+  const time = d.toLocaleTimeString("en-GB", { hour: "numeric", minute: "2-digit", hour12: true, timeZone: TZ }).toLowerCase().replace(/\s+/g, " ");
+  return `${day}, ${time}`;
 }
 
 export function formatDate(iso: string) {

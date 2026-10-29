@@ -186,7 +186,7 @@ export function JobDetail() {
               <p className="text-[14px] text-grey-600">This role isn't taking applications right now.</p>
             ) : (
               <>
-                <p className="text-[14px] text-grey-600">Apply now and you'll hear back by</p>
+                <p className="text-[14px] text-grey-600">Apply now and you'll hear back within 48 hours, by</p>
                 <p className="tnum mt-1 font-display text-[22px] font-semibold">{formatDateTime(due)}</p>
                 <ButtonLink to={`/jobs/${job.id}/apply`} className="mt-5 w-full">
                   Apply

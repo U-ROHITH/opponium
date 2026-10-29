@@ -19,14 +19,18 @@ function app(id: number, name: string, title: string, stage: StageKey, appliedHo
   };
 }
 
+// A worked example that is easy to check: applied 1 Jan at 10 am, reply due 3 Jan at 10 am.
+const ex = (day: number, hhmm: string) => `2027-01-0${day}T${hhmm}:00+05:30`;
+
 export const sampleTracker = {
   title: "Frontend Engineer",
   company: "Kite Labs",
-  replyDueAt: h(29),
+  appliedAt: ex(1, "10:00"),
+  replyDueAt: ex(3, "10:00"),
   events: [
-    { id: 3, kind: "reviewing_resume" as const, text: "Reviewing your resume", at: h(-17.2) },
-    { id: 4, kind: "step_completed" as const, text: "Step completed: Resume screen", at: h(-3.4) },
-    { id: 5, kind: "reviewing_profile" as const, text: "Reviewing your profile", at: h(-1.1) },
+    { id: 3, kind: "reviewing_resume" as const, text: "Reviewing your resume", at: ex(1, "14:15") },
+    { id: 4, kind: "step_completed" as const, text: "Step completed: Resume screen", at: ex(2, "10:40") },
+    { id: 5, kind: "reviewing_profile" as const, text: "Reviewing your profile", at: ex(2, "16:05") },
   ],
 };
 

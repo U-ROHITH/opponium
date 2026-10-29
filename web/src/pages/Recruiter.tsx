@@ -486,7 +486,7 @@ export function ReviewApplicant() {
               }}
             >
               <Field label="When" optional>
-                <Input value={when} onChange={(e) => setWhen(e.target.value)} placeholder="Fri 31 Oct, 11:00" maxLength={60} />
+                <Input value={when} onChange={(e) => setWhen(e.target.value)} placeholder="2 Jan, 11:00 am" maxLength={60} />
               </Field>
               <div className="flex gap-2">
                 <Button className="h-9 px-4 text-[13px]" disabled={busy !== null}>

@@ -18,8 +18,17 @@ function TrackerPreview() {
         </div>
       </div>
       <div className="border-b border-grey-200 bg-grey-50 px-5 py-4">
-        <p className="text-[13px] text-grey-600">You'll hear back by</p>
-        <p className="tnum font-display text-[22px] font-semibold">{formatDateTime(job.replyDueAt)}</p>
+        <div className="flex items-end justify-between gap-4">
+          <div>
+            <p className="text-[13px] text-grey-600">Applied</p>
+            <p className="tnum text-[15px] font-medium">{formatDateTime(job.appliedAt)}</p>
+          </div>
+          <div className="text-right">
+            <p className="text-[13px] text-grey-600">You'll hear back by</p>
+            <p className="tnum font-display text-[22px] font-semibold">{formatDateTime(job.replyDueAt)}</p>
+          </div>
+        </div>
+        <p className="mt-2 text-[12px] text-grey-500">Example. Every reply is due 48 hours after you apply.</p>
       </div>
       <div className="p-5">
         <ActivityFeed signals={job.events} />

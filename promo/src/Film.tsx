@@ -227,7 +227,7 @@ function S3() {
             <EyeIcon size={icon} />
             <div>
               <div style={ui(v ? 40 : 66, 500, { color: C.ink, whiteSpace: "nowrap" })}>Your application was viewed</div>
-              <div style={ui(v ? 30 : 38, 400, { color: C.g500, marginTop: 10 })}>Thu 29 Oct, 20:30</div>
+              <div style={ui(v ? 30 : 38, 400, { color: C.g500, marginTop: 10 })}>1 Jan, 11:30 am</div>
             </div>
           </div>
         </AbsoluteFill>
@@ -310,9 +310,9 @@ function S4() {
   const node = v ? 52 : 56;
   const states: NodeState[] = [f >= 30 ? "done" : "current", f >= 40 ? "current" : "future", "future", "future", "future"];
   const sigs: Sig[] = [
-    { at: 30, icon: "done", text: "Step completed: Resume screen", time: "Fri 30 Oct, 10:36" },
-    { at: 15, icon: "file", text: "Reviewing your resume", time: "Thu 29 Oct, 20:48" },
-    { at: -20, icon: "eye", text: "Your application was viewed", time: "Thu 29 Oct, 20:30" },
+    { at: 30, icon: "done", text: "Step completed: Resume screen", time: "2 Jan, 10:40 am" },
+    { at: 15, icon: "file", text: "Reviewing your resume", time: "1 Jan, 2:15 pm" },
+    { at: -20, icon: "eye", text: "Your application was viewed", time: "1 Jan, 11:30 am" },
   ];
   const cardW = v ? 920 : 1500;
   const cardH = v ? 1420 : 860;
@@ -332,7 +332,7 @@ function S4() {
               <div style={{ width: 88, height: 88, borderRadius: 16, background: C.ink, color: C.paper, display: "flex", alignItems: "center", justifyContent: "center", ...display(42, 600) }}>K</div>
               <div>
                 <div style={display(v ? 52 : 56, 600, { color: C.ink })}>Frontend Engineer</div>
-                <div style={ui(v ? 30 : 32, 400, { color: C.g600, marginTop: 6 })}>Kite Labs, applied Thu 29 Oct, 20:26</div>
+                <div style={ui(v ? 30 : 32, 400, { color: C.g600, marginTop: 6 })}>Kite Labs, applied 1 Jan, 10:00 am</div>
               </div>
             </div>
             <div style={{ marginTop: v ? 76 : 66 }}>

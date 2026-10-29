@@ -1,4 +1,5 @@
 import statistics
+from zoneinfo import ZoneInfo
 from datetime import timedelta
 
 from django.conf import settings
@@ -26,6 +27,12 @@ class IsAdmin(BasePermission):
 
 def fail(message, code="invalid", http=status.HTTP_400_BAD_REQUEST):
     return Response({"error": message, "code": code}, status=http)
+
+
+def _ist(dt):
+    """'3 Jan, 10:00 am' in India time, matching the apps."""
+    local = dt.astimezone(ZoneInfo("Asia/Kolkata"))
+    return f"{local.day} {local:%b}, {local.strftime('%I').lstrip('0')}:{local:%M} {local.strftime('%p').lower()}"
 
 
 def send_invite_email(inv):
@@ -302,7 +309,7 @@ def nudge(request, pk):
         send_email(
             target.email,
             f"Reply due: {a.name} for {a.job.title}",
-            f"{a.name} applied for {a.job.title} and is waiting on a reply. It was due {timezone.localtime(a.reply_due_at):%d %b, %H:%M} UTC.\n\nA quick status update counts as a reply.",
+            f"{a.name} applied for {a.job.title} and is waiting on a reply. It was due {_ist(a.reply_due_at)} IST.\n\nA quick status update counts as a reply.",
             ("Open the application", f"{settings.WEB_URL}/r/applications/{a.id}"),
         )
     except DeliveryError as e:
