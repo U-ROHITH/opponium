@@ -192,8 +192,8 @@ function S3() {
   const f = useCurrentFrame(); // 0..29
   const { cx, cy, v } = useLayout();
   const land = ip(f, [0, 5], [1, 0], E.backOut);
-  const icon = v ? 140 : 170;
-  const cardW = v ? 960 : 1460;
+  const icon = v ? 120 : 170;
+  const cardW = v ? 1000 : 1460;
   const cardH = v ? 250 : 280;
   // the pupil is the zoom origin and sits at frame centre after landing
   const cardLeft = cx - cardW / 2;
@@ -226,7 +226,7 @@ function S3() {
           >
             <EyeIcon size={icon} />
             <div>
-              <div style={ui(v ? 46 : 66, 500, { color: C.ink })}>Your application was viewed</div>
+              <div style={ui(v ? 40 : 66, 500, { color: C.ink, whiteSpace: "nowrap" })}>Your application was viewed</div>
               <div style={ui(v ? 30 : 38, 400, { color: C.g500, marginTop: 10 })}>Thu 29 Oct, 20:30</div>
             </div>
           </div>
