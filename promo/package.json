@@ -1,0 +1,21 @@
+{
+  "name": "opponium-promo",
+  "private": true,
+  "scripts": {
+    "studio": "remotion studio",
+    "render": "remotion render"
+  },
+  "dependencies": {
+    "@fontsource/ibm-plex-sans": "^5.3.0",
+    "@fontsource/jost": "^5.3.0",
+    "@remotion/cli": "^4.0.300",
+    "@types/react": "^19.3.0",
+    "lucide-react": "^0.468.0",
+    "react": "^19.1.0",
+    "react-dom": "^19.1.0",
+    "remotion": "^4.0.300"
+  },
+  "devDependencies": {
+    "typescript": "^5.8.3"
+  }
+}
