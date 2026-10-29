@@ -1,7 +1,7 @@
-import { X, Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, ArrowRight, Flag } from "lucide-react";
-import type { Application, AppStatus, Signal, SignalKind, StageKey } from "../data/types";
-import { STAGES } from "../data/mock";
-import { slaState, slaText } from "../lib/sla";
+import { X, Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, Undo2, Flag } from "lucide-react";
+import type { AppEvent, Application, AppStatus, EventKind, StageKey } from "../lib/api";
+import { STAGES } from "../lib/stages";
+import { repliedLate, slaText } from "../lib/sla";
 import { formatDateTime } from "../lib/time";
 import { cx } from "./ui";
 
@@ -29,14 +29,15 @@ export function StatusChip({ status }: { status: AppStatus }) {
 }
 
 export function SlaLabel({ app, className }: { app: Application; className?: string }) {
-  const state = slaState(app);
+  const state = app.sla;
   const text = slaText(app);
-  const late = state === "replied" && new Date(app.firstReplyAt!).getTime() > new Date(app.replyDueAt).getTime();
+  const late = state === "replied" && repliedLate(app);
   const map = {
     replied: { cls: late ? "text-warn" : "text-grey-500", icon: <Check size={14} strokeWidth={2} /> },
     on_track: { cls: "text-grey-700", icon: <Clock size={14} strokeWidth={1.75} /> },
     due_soon: { cls: "text-warn", icon: <Clock size={14} strokeWidth={2.25} /> },
     overdue: { cls: "text-bad", icon: <CircleAlert size={14} strokeWidth={2.25} /> },
+    closed: { cls: "text-grey-500", icon: <X size={14} strokeWidth={2} /> },
   }[state];
   return (
     <span className={cx("tnum inline-flex items-center gap-1.5 text-[13px] font-medium", map.cls, className)}>
@@ -126,24 +127,24 @@ export function Stepper({ stage, status }: { stage: StageKey; status?: AppStatus
   );
 }
 
-const signalIcon: Record<SignalKind, typeof Eye> = {
+const signalIcon: Record<EventKind, typeof Eye> = {
   received: Inbox,
   viewed: Eye,
   reviewing_resume: FileSearch,
   reviewing_profile: UserSearch,
   interview_scheduled: CalendarClock,
   step_completed: Check,
-  moved: ArrowRight,
   decision: Flag,
+  withdrawn: Undo2,
 };
 
-export function SignalGlyph({ kind }: { kind: SignalKind }) {
+export function SignalGlyph({ kind }: { kind: EventKind }) {
   const Icon = signalIcon[kind];
   return <Icon size={15} strokeWidth={1.75} className="shrink-0" />;
 }
 
-export function SignalIcon({ kind, active }: { kind: SignalKind; active?: boolean }) {
-  const Icon = signalIcon[kind];
+export function SignalIcon({ kind, active }: { kind: EventKind; active?: boolean }) {
+  const Icon = signalIcon[kind] ?? Inbox;
   return (
     <span
       className={cx(
@@ -156,7 +157,7 @@ export function SignalIcon({ kind, active }: { kind: SignalKind; active?: boolea
   );
 }
 
-export function ActivityFeed({ signals }: { signals: Signal[] }) {
+export function ActivityFeed({ signals }: { signals: AppEvent[] }) {
   const items = [...signals].reverse();
   return (
     <ol className="relative">

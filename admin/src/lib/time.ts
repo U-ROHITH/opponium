@@ -1,5 +1,3 @@
-import { NOW } from "../data/mock";
-
 const TZ = "Asia/Kolkata";
 
 export function formatDateTime(iso: string) {
@@ -13,13 +11,18 @@ export function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString("en-GB", { day: "numeric", month: "short", timeZone: TZ });
 }
 
+export function formatToday() {
+  return new Date().toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", timeZone: TZ }).replace(",", "");
+}
+
 export function hoursFromNow(iso: string) {
-  return (new Date(iso).getTime() - NOW.getTime()) / 3600_000;
+  return (new Date(iso).getTime() - Date.now()) / 3600_000;
 }
 
 export function relative(iso: string) {
   const hrs = hoursFromNow(iso);
   const abs = Math.abs(hrs);
+  if (abs < 1 / 60) return "just now";
   let text: string;
   if (abs < 1) text = `${Math.max(1, Math.round(abs * 60))}m`;
   else if (abs < 48) text = `${Math.round(abs)}h`;

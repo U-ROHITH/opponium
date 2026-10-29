@@ -1,26 +1,20 @@
-import type { Application } from "../data/types";
+import type { Application } from "./api";
 import { durationHours, hoursFromNow } from "./time";
 
-export type SlaState = "replied" | "on_track" | "due_soon" | "overdue";
-
-export const DUE_SOON_HOURS = 8;
-
-export function slaState(app: Application): SlaState {
-  if (app.firstReplyAt) return "replied";
-  const left = hoursFromNow(app.replyDueAt);
-  if (left < 0) return "overdue";
-  if (left < DUE_SOON_HOURS) return "due_soon";
-  return "on_track";
+export function repliedLate(app: Application) {
+  return !!app.first_reply_at && new Date(app.first_reply_at).getTime() > new Date(app.reply_due_at).getTime();
 }
 
+/** Text for the reply clock. The state itself comes from the API `sla` field. */
 export function slaText(app: Application) {
-  const state = slaState(app);
-  const left = hoursFromNow(app.replyDueAt);
-  switch (state) {
+  const left = hoursFromNow(app.reply_due_at);
+  switch (app.sla) {
     case "replied": {
-      const took = durationHours(app.appliedAt, app.firstReplyAt!);
-      return took > 48 ? `Replied late, ${took}h` : `Replied in ${took}h`;
+      const took = Math.max(0, durationHours(app.applied_at, app.first_reply_at!));
+      return repliedLate(app) ? `Replied late, ${took}h` : `Replied in ${took}h`;
     }
+    case "closed":
+      return "Closed";
     case "overdue":
       return `Overdue ${Math.max(1, Math.round(-left))}h`;
     default:

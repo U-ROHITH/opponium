@@ -1,14 +1,12 @@
 import { useState } from "react";
-import { Link, NavLink, Outlet } from "react-router-dom";
+import { Link, NavLink, Navigate, Outlet, useLocation } from "react-router-dom";
 import { Menu, X } from "lucide-react";
 import { LogoMark, Wordmark } from "./Logo";
 import { Initials, cx } from "./ui";
-import { pipeline } from "../data/mock";
-import { accessRequests } from "../data/admin";
-import { slaState } from "../lib/sla";
-import { useAdminState } from "../state";
+import { WakeNotice } from "./states";
+import { useAdmin } from "../state";
 
-const sections = (pendingRequests: number): { links: [string, string, number?][] }[] => [
+const sections = (pendingRequests: number, overdue: number): { links: [string, string, number?][] }[] => [
   { links: [["/", "Overview"]] },
   {
     links: [
@@ -20,7 +18,7 @@ const sections = (pendingRequests: number): { links: [string, string, number?][]
   {
     links: [
       ["/companies", "Companies"],
-      ["/sla", "Reply breaches", pipeline.filter((a) => slaState(a) === "overdue").length],
+      ["/sla", "Reply breaches", overdue],
       ["/applications", "Application lookup"],
     ],
   },
@@ -45,13 +43,47 @@ export function Brand() {
   );
 }
 
+function shortName(name: string) {
+  const parts = name.trim().split(/\s+/);
+  return parts.length > 1 ? `${parts[0]} ${parts[parts.length - 1][0]}.` : parts[0];
+}
+
+/** Guards every page but /login: signed in, role admin. */
 export function Shell() {
+  const { auth, overview, signOut } = useAdmin();
+  const location = useLocation();
+  if (auth.status === "out") return <Navigate to="/login" replace state={{ from: location.pathname }} />;
+  if (auth.status === "checking")
+    return (
+      <div className="flex min-h-dvh flex-col items-center justify-center gap-4 px-4">
+        <span className="sr-only">Loading</span>
+        <WakeNotice className="max-w-sm" />
+      </div>
+    );
+  const pending = overview.data?.access_requests ?? 0;
+  const overdue = overview.data?.overdue ?? 0;
+  const user = auth.user;
+  const display = user.name || user.email;
+  return <Frame pending={pending} overdue={overdue} name={display} onSignOut={signOut} />;
+}
+
+function Frame({ pending, overdue, name, onSignOut }: { pending: number; overdue: number; name: string; onSignOut: () => void }) {
   const [open, setOpen] = useState(false);
-  const { decided } = useAdminState();
-  const pending = accessRequests.filter((r) => !decided[r.id]).length;
+  const footer = (
+    <div className="flex items-center gap-2.5 border-t border-grey-200 px-2 pt-4">
+      <Initials name={name} size={28} />
+      <div className="min-w-0 flex-1 leading-tight">
+        <p className="truncate text-[13px] font-medium">{shortName(name)}</p>
+        <p className="text-[12px] text-grey-500">Admin</p>
+      </div>
+      <button onClick={onSignOut} className="h-8 shrink-0 rounded-full px-2.5 text-[13px] text-grey-600 hover:bg-grey-100 hover:text-ink">
+        Sign out
+      </button>
+    </div>
+  );
   const nav = (
     <nav className="divide-y divide-grey-200">
-      {sections(pending).map((s, i) => (
+      {sections(pending, overdue).map((s, i) => (
         <div key={i} className="py-3 first:pt-0">
           <div className="space-y-0.5">
             {s.links.map(([to, label, n]) => (
@@ -73,13 +105,7 @@ export function Shell() {
             <Brand />
           </div>
           <div className="mt-8">{nav}</div>
-          <div className="mt-auto flex items-center gap-2.5 border-t border-grey-200 px-2 pt-4">
-            <Initials name="Rohith Uppunuthula" size={28} />
-            <div className="leading-tight">
-              <p className="text-[13px] font-medium">Rohith U.</p>
-              <p className="text-[12px] text-grey-500">Owner</p>
-            </div>
-          </div>
+          <div className="mt-auto">{footer}</div>
         </div>
       </aside>
       <header className="flex h-14 items-center justify-between border-b border-grey-200 px-4 lg:hidden">
@@ -88,9 +114,15 @@ export function Shell() {
           {open ? <X size={20} /> : <Menu size={20} />}
         </button>
       </header>
-      {open && <div className="border-b border-grey-200 p-3 lg:hidden">{nav}</div>}
+      {open && (
+        <div className="border-b border-grey-200 p-3 lg:hidden">
+          {nav}
+          <div className="pb-1">{footer}</div>
+        </div>
+      )}
       <main className="min-w-0 flex-1 px-4 py-8 sm:px-8 sm:py-10">
         <div className="mx-auto max-w-6xl">
+          <WakeNotice className="mb-6" />
           <Outlet />
         </div>
       </main>

@@ -75,6 +75,15 @@ def create_invite(actor, email, role, company, request):
     return inv
 
 
+def _team_row(a, soon):
+    p = application_payload(a, team=True, due_soon_hours=soon)
+    p.pop("notes")
+    owner = a.owner or a.job.owner
+    p["owner"] = {"id": owner.id, "name": owner.name or owner.email} if owner else None
+    p["nudged_at"] = a.nudged_at
+    return p
+
+
 @api_view(["GET"])
 @permission_classes([IsAdmin])
 def overview(request):
@@ -83,25 +92,25 @@ def overview(request):
     open_apps = list(with_related(Application.objects.filter(status__in=["submitted", "in_review", "interviewing"])))
     states = [(a, sla_state(a, cfg.due_soon_hours)) for a in open_apps]
     attention = sorted([a for a, s in states if s in ("overdue", "due_soon")], key=lambda a: a.reply_due_at)
-    trend = []
+    trend, all_hours = [], []
     for d in range(13, -1, -1):
         day = (now - timedelta(days=d)).date()
         hours = [
             (a.first_reply_at - a.applied_at).total_seconds() / 3600
             for a in Application.objects.filter(first_reply_at__date=day).only("first_reply_at", "applied_at")
         ]
+        all_hours += hours
         trend.append({"day": day, "median_hours": round(statistics.median(hours), 1) if hours else None})
-    recent = [h for t in trend for h in [t["median_hours"]] if h is not None]
     return Response(
         {
             "open_applications": len(open_apps),
             "companies": Company.objects.filter(status="active").count(),
             "due_soon": sum(1 for _, s in states if s == "due_soon"),
             "overdue": sum(1 for _, s in states if s == "overdue"),
-            "median_first_reply_hours": round(statistics.median(recent), 1) if recent else None,
+            "median_first_reply_hours": round(statistics.median(all_hours), 1) if all_hours else None,
             "invites_pending": sum(1 for i in Invite.objects.filter(state=Invite.PENDING) if i.status == "pending"),
             "access_requests": AccessRequest.objects.filter(state="pending").count(),
-            "attention": [application_payload(a, due_soon_hours=cfg.due_soon_hours) for a in attention[:8]],
+            "attention": [_team_row(a, cfg.due_soon_hours) for a in attention[:8]],
             "trend": trend,
             "recent": [audit_row(l) for l in AuditLog.objects.all()[:6]],
         }
@@ -278,10 +287,7 @@ def sla(request):
     for a in qs:
         s = sla_state(a, soon)
         if s in ("overdue", "due_soon"):
-            p = application_payload(a, team=True, due_soon_hours=soon)
-            p.pop("notes")
-            p["nudged_at"] = a.nudged_at
-            rows.append(p)
+            rows.append(_team_row(a, soon))
     return Response(rows)
 
 

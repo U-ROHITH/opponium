@@ -1,6 +1,6 @@
-import { X, Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, ArrowRight, Flag } from "lucide-react";
+import { X, Check, CircleAlert, Clock, Eye, FileSearch, Inbox, CalendarClock, UserSearch, Flag, Minus } from "lucide-react";
 import type { Application, AppStatus, Signal, SignalKind, StageKey } from "../data/types";
-import { STAGES } from "../data/mock";
+import { STAGES } from "../data/stages";
 import { slaState, slaText } from "../lib/sla";
 import { formatDateTime } from "../lib/time";
 import { cx } from "./ui";
@@ -31,12 +31,13 @@ export function StatusChip({ status }: { status: AppStatus }) {
 export function SlaLabel({ app, className }: { app: Application; className?: string }) {
   const state = slaState(app);
   const text = slaText(app);
-  const late = state === "replied" && new Date(app.firstReplyAt!).getTime() > new Date(app.replyDueAt).getTime();
+  const late = state === "replied" && !!app.first_reply_at && new Date(app.first_reply_at).getTime() > new Date(app.reply_due_at).getTime();
   const map = {
     replied: { cls: late ? "text-warn" : "text-grey-500", icon: <Check size={14} strokeWidth={2} /> },
     on_track: { cls: "text-grey-700", icon: <Clock size={14} strokeWidth={1.75} /> },
     due_soon: { cls: "text-warn", icon: <Clock size={14} strokeWidth={2.25} /> },
     overdue: { cls: "text-bad", icon: <CircleAlert size={14} strokeWidth={2.25} /> },
+    closed: { cls: "text-grey-500", icon: <Minus size={14} strokeWidth={2} /> },
   }[state];
   return (
     <span className={cx("tnum inline-flex items-center gap-1.5 text-[13px] font-medium", map.cls, className)}>
@@ -133,17 +134,17 @@ const signalIcon: Record<SignalKind, typeof Eye> = {
   reviewing_profile: UserSearch,
   interview_scheduled: CalendarClock,
   step_completed: Check,
-  moved: ArrowRight,
   decision: Flag,
+  withdrawn: X,
 };
 
 export function SignalGlyph({ kind }: { kind: SignalKind }) {
-  const Icon = signalIcon[kind];
+  const Icon = signalIcon[kind] ?? Flag;
   return <Icon size={15} strokeWidth={1.75} className="shrink-0" />;
 }
 
 export function SignalIcon({ kind, active }: { kind: SignalKind; active?: boolean }) {
-  const Icon = signalIcon[kind];
+  const Icon = signalIcon[kind] ?? Flag;
   return (
     <span
       className={cx(

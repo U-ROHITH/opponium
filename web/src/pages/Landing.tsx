@@ -1,14 +1,13 @@
 import { Link } from "react-router-dom";
-import { Brand, PreviewStrip } from "../components/layouts";
+import { Brand } from "../components/layouts";
 import { ActivityFeed, SlaLabel } from "../components/status";
 import { ButtonLink, CompanyMark } from "../components/ui";
-import { applications, jobById, pipeline, STAGES } from "../data/mock";
+import { sampleInbox, sampleTracker } from "../data/sample";
+import { stageLabel } from "../data/stages";
 import { formatDateTime } from "../lib/time";
-import { slaState } from "../lib/sla";
 
 function TrackerPreview() {
-  const app = applications[0];
-  const job = jobById(app.jobId);
+  const job = sampleTracker;
   return (
     <div className="rounded-lg border border-grey-200 bg-paper">
       <div className="flex items-start gap-3 border-b border-grey-200 p-5">
@@ -20,10 +19,10 @@ function TrackerPreview() {
       </div>
       <div className="border-b border-grey-200 bg-grey-50 px-5 py-4">
         <p className="text-[13px] text-grey-600">You'll hear back by</p>
-        <p className="tnum font-display text-[22px] font-semibold">{formatDateTime(app.replyDueAt)}</p>
+        <p className="tnum font-display text-[22px] font-semibold">{formatDateTime(job.replyDueAt)}</p>
       </div>
       <div className="p-5">
-        <ActivityFeed signals={app.signals.slice(-3)} />
+        <ActivityFeed signals={job.events} />
       </div>
     </div>
   );
@@ -37,11 +36,9 @@ const ticks = [
 ];
 
 export default function Landing() {
-  const order = { overdue: 0, due_soon: 1, on_track: 2, replied: 3 };
-  const inbox = [...pipeline].sort((a, b) => order[slaState(a)] - order[slaState(b)]).slice(0, 4);
+  const inbox = sampleInbox;
   return (
     <div className="min-h-dvh">
-      <PreviewStrip />
       <header className="mx-auto flex h-16 max-w-6xl items-center justify-between px-4 sm:px-6">
         <Brand />
         <nav className="flex items-center gap-2 sm:gap-6">
@@ -133,9 +130,9 @@ export default function Landing() {
                     <tr key={a.id}>
                       <td className="px-4 py-3">
                         <p className="font-medium">{a.candidate.name}</p>
-                        <p className="text-[13px] text-grey-500">{jobById(a.jobId).title}</p>
+                        <p className="text-[13px] text-grey-500">{a.job.title}</p>
                       </td>
-                      <td className="hidden px-4 py-3 text-grey-700 sm:table-cell">{STAGES.find((s) => s.key === a.stage)!.label}</td>
+                      <td className="hidden px-4 py-3 text-grey-700 sm:table-cell">{stageLabel(a.stage)}</td>
                       <td className="px-4 py-3 text-right">
                         <SlaLabel app={a} />
                       </td>
@@ -173,9 +170,6 @@ export default function Landing() {
             <a href="mailto:hello@opponium.com" className="py-2 hover:text-ink">
               hello@opponium.com
             </a>
-            <Link to="/screens" className="py-2 hover:text-ink">
-              All screens
-            </Link>
             <span>© 2026 Opponium</span>
           </div>
         </div>

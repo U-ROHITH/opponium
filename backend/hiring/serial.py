@@ -77,7 +77,7 @@ def application_payload(app, *, team=False, due_soon_hours=None):
 
 
 def with_related(qs):
-    return qs.select_related("job__company", "owner").prefetch_related("events", "notes__author")
+    return qs.select_related("job__company", "job__owner", "owner").prefetch_related("events", "notes__author")
 
 
 __all__ = ["Application", "Event", "Job", "sla_state", "job_payload", "application_payload", "event_payload", "with_related"]

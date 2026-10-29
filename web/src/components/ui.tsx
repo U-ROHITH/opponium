@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ChevronDown } from "lucide-react";
 import { twMerge } from "tailwind-merge";
 
-const cx = (...c: (string | false | undefined)[]) => twMerge(c.filter(Boolean).join(" "));
+const cx = (...c: (string | false | null | undefined)[]) => twMerge(c.filter(Boolean).join(" "));
 export { cx };
 
 type Variant = "primary" | "secondary" | "ghost" | "danger";
@@ -105,5 +105,63 @@ export function CompanyMark({ name, size = 40 }: { name: string; size?: number }
     >
       {name[0]}
     </span>
+  );
+}
+
+/** Quiet grey rows while a list loads. */
+export function LoadingRows({ rows = 4, className }: { rows?: number; className?: string }) {
+  return (
+    <ul className={cx("divide-y divide-grey-200 border-y border-grey-200", className)} aria-label="Loading" aria-busy>
+      {Array.from({ length: rows }).map((_, i) => (
+        <li key={i} className="flex items-center gap-4 py-5 sm:px-3">
+          <span className="h-10 w-10 shrink-0 rounded-md bg-grey-100" />
+          <span className="flex-1 space-y-2">
+            <span className="block h-3.5 w-2/5 rounded bg-grey-100" />
+            <span className="block h-3 w-1/4 rounded bg-grey-100" />
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+export function LoadingText({ children = "Loading", className }: { children?: ReactNode; className?: string }) {
+  return (
+    <p className={cx("py-10 text-[14px] text-grey-500", className)} aria-busy>
+      {children}
+    </p>
+  );
+}
+
+export function ErrorState({ error, onRetry, className }: { error: unknown; onRetry?: () => void; className?: string }) {
+  const msg = error instanceof Error && error.message ? error.message : "Something went wrong. Try again.";
+  return (
+    <div className={cx("rounded-lg border border-grey-200 px-5 py-6", className)} role="alert">
+      <p className="text-[14px] text-grey-800">{msg}</p>
+      {onRetry && (
+        <Button variant="secondary" className="mt-4 h-9 px-4 text-[13px]" onClick={onRetry}>
+          Try again
+        </Button>
+      )}
+    </div>
+  );
+}
+
+export function EmptyState({ title, body, action, className }: { title: string; body?: ReactNode; action?: ReactNode; className?: string }) {
+  return (
+    <div className={cx("border-y border-grey-200 py-12 text-center", className)}>
+      <p className="font-medium">{title}</p>
+      {body && <p className="mx-auto mt-1 max-w-sm text-[14px] text-grey-600">{body}</p>}
+      {action && <div className="mt-5 flex justify-center">{action}</div>}
+    </div>
+  );
+}
+
+export function FormError({ children }: { children?: ReactNode }) {
+  if (!children) return null;
+  return (
+    <p className="text-[14px] text-bad" role="alert">
+      {children}
+    </p>
   );
 }
