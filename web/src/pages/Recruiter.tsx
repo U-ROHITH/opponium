@@ -567,7 +567,7 @@ export function NewJob() {
         <ArrowLeft size={15} /> Jobs
       </Link>
       <h1 className="mt-6 text-[28px] font-semibold">New job</h1>
-      <p className="mt-1 text-grey-600">Candidates see this exactly as written. Every applicant must hear back within 40 hours.</p>
+      <p className="mt-1 text-grey-600">Candidates see this exactly as written. Every applicant must hear back within 48 hours.</p>
       <form
         noValidate
         className="mt-8 space-y-5"

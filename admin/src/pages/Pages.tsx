@@ -89,7 +89,7 @@ export function Overview() {
   const stats: [string, string, string][] = [
     ["Open applications", String(pipeline.filter((a) => a.status !== "offer").length + 48), "Across 4 companies"],
     ["Replies due in 8h", String(soon.length), "Watch these first"],
-    ["Overdue now", String(overdue.length), "Past 40 hours"],
+    ["Overdue now", String(overdue.length), "Past 48 hours"],
     ["Median first reply", "14h", "Last 14 days"],
     ["Invites pending", String(seedInvites.filter((i) => i.status === "Pending").length), `${accessRequests.length} access requests`],
   ];
@@ -134,7 +134,7 @@ export function Overview() {
         </section>
         <section>
           <h2 className="text-[18px] font-semibold">Median time to first reply</h2>
-          <p className="mt-1 text-[13px] text-grey-500">Hours, last 14 days. Target is under 40.</p>
+          <p className="mt-1 text-[13px] text-grey-500">Hours, last 14 days. Target is under 48.</p>
           <div className="mt-6 flex h-36 items-end gap-1 border-b border-grey-300 sm:gap-1.5" role="img" aria-label="Median first reply fell from 31 to 14 hours over 14 days">
             {replyTrend.map((v, i) => (
               <div key={i} className="group relative min-w-0 flex-1">
@@ -409,7 +409,7 @@ export function Users() {
 export function Companies() {
   return (
     <div>
-      <PageHeader title="Companies" sub="Reply rate is the share of applications answered within 40 hours, last 30 days." actions={<Button>Add company</Button>} />
+      <PageHeader title="Companies" sub="Reply rate is the share of applications answered within 48 hours, last 30 days." actions={<Button>Add company</Button>} />
       <div className="mt-8">
         <Table
           head={["Company", "Domain", "Recruiters", "Open jobs", "Open applications", "Reply rate", "Status"]}
@@ -461,7 +461,7 @@ export function Sla() {
   const rows = pipeline.filter((a) => ["overdue", "due_soon"].includes(slaState(a))).sort((a, b) => a.replyDueAt.localeCompare(b.replyDueAt));
   return (
     <div>
-      <PageHeader title="Reply breaches" sub="Applications past, or within 8 hours of, the 40-hour reply deadline." />
+      <PageHeader title="Reply breaches" sub="Applications past, or within 8 hours of, the 48-hour reply deadline." />
       <div className="mt-8">
         <Table
           head={["Candidate", "Company and job", "Stage", "Owner", "Deadline", "Status", ""]}
@@ -513,7 +513,7 @@ export function Sla() {
         </Table>
       </div>
       <p className="mt-4 text-[13px] text-grey-500">
-        A nudge emails the owner and logs it. After 48 hours, the candidate's tracker shows a "running late" notice automatically.
+        A nudge emails the owner and logs it. Once 48 hours pass, the candidate's tracker shows a "running late" notice automatically.
       </p>
     </div>
   );
@@ -633,7 +633,7 @@ export function Settings() {
           <h2 className="text-[18px] font-semibold">Reply deadline</h2>
           <div className="mt-4 grid gap-4 sm:grid-cols-2">
             <Field label="Reply within (hours)" hint="Counted from submission to the first reply beyond “Viewed”.">
-              <Input type="number" defaultValue={40} className="tnum" />
+              <Input type="number" defaultValue={48} className="tnum" />
             </Field>
             <Field label="Due soon warning (hours left)">
               <Input type="number" defaultValue={8} className="tnum" />

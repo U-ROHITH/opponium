@@ -43,7 +43,7 @@ export const audit = [
   { id: "l1", at: h(-0.3), actor: "Priya Nair", action: "Set signal", target: "Aarav Mehta, Frontend Engineer", detail: "Reviewing your profile" },
   { id: "l2", at: h(-1.2), actor: "Rohith Uppunuthula", action: "Sent invite", target: "ishita.rao@bits-pilani.ac.in", detail: "Role: Candidate" },
   { id: "l3", at: h(-3.4), actor: "Priya Nair", action: "Moved stage", target: "Aarav Mehta, Frontend Engineer", detail: "Resume screen to Profile review" },
-  { id: "l4", at: h(-5), actor: "System", action: "Reply overdue", target: "Ishita Rao, Frontend Engineer", detail: "40h passed with no reply" },
+  { id: "l4", at: h(-5), actor: "System", action: "Reply overdue", target: "Ishita Rao, Frontend Engineer", detail: "48h passed with no reply" },
   { id: "l5", at: h(-6), actor: "Rahul Iyer", action: "Revoked invite", target: "temp.recruiter@gmail.com", detail: "" },
   { id: "l6", at: h(-9), actor: "Rohith Uppunuthula", action: "Suspended user", target: "Arjun Menon", detail: "Duplicate account" },
   { id: "l7", at: h(-12), actor: "Sana Kapoor", action: "Shared decision", target: "Aarav Mehta, Product Designer", detail: "Not moving forward" },

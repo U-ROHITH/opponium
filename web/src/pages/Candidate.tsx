@@ -12,7 +12,7 @@ export function Jobs() {
   const applied = new Set(applications.map((a) => a.jobId));
   return (
     <div>
-      <PageHeader title="Jobs" sub="Roles from teams that have committed to reply within 40 hours." />
+      <PageHeader title="Jobs" sub="Roles from teams that have committed to reply within 48 hours." />
       <div className="mt-8 flex gap-2 overflow-x-auto" role="tablist">
         {["All", "Full-time", "Internship"].map((t) => (
           <button
@@ -60,7 +60,7 @@ export function JobDetail() {
   const { id } = useParams();
   const job = jobById(id!);
   const existing = applications.find((a) => a.jobId === job.id);
-  const due = new Date(NOW.getTime() + 40 * 3600_000).toISOString();
+  const due = new Date(NOW.getTime() + 48 * 3600_000).toISOString();
   return (
     <div>
       <Link to="/jobs" className="-my-2 inline-flex items-center gap-1.5 py-2 text-[14px] text-grey-600 hover:text-ink">
@@ -284,7 +284,7 @@ export function Apply() {
 export function Submitted() {
   const [params] = useSearchParams();
   const job = jobById(params.get("job") ?? "j-105");
-  const due = new Date(NOW.getTime() + 40 * 3600_000).toISOString();
+  const due = new Date(NOW.getTime() + 48 * 3600_000).toISOString();
   return (
     <div className="mx-auto max-w-xl pt-6">
       <span className="flex h-11 w-11 items-center justify-center rounded-full bg-ink text-paper">
@@ -405,7 +405,7 @@ export function Tracker() {
                 <span className="text-[14px] text-grey-600">You'll hear back by </span>
                 <span className="tnum font-display text-[22px] font-semibold">{formatDateTime(app.replyDueAt)}</span>
               </p>
-              <span className="tnum text-[13px] text-grey-500">{relative(app.replyDueAt)}, within 40 hours of applying</span>
+              <span className="tnum text-[13px] text-grey-500">{relative(app.replyDueAt)}, within 48 hours of applying</span>
             </div>
           )}
         </div>

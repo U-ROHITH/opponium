@@ -33,7 +33,7 @@ const ticks = [
   { at: "0h", title: "You apply", body: "Resume and a few basics. Most of it is already filled in from your profile." },
   { at: "First hours", title: "Someone opens it", body: "You see “Viewed” the moment a recruiter opens your application." },
   { at: "As it moves", title: "Every step, live", body: "Reviewing your resume, step completed, interview scheduled. No guessing." },
-  { at: "By 40h", title: "A real reply", body: "A next step or a clear no. If a team runs late, it is flagged to us, not hidden from you." },
+  { at: "By 48h", title: "A real reply", body: "A next step or a clear no. If a team runs late, it is flagged to us, not hidden from you." },
 ];
 
 export default function Landing() {
@@ -59,9 +59,9 @@ export default function Landing() {
 
       <section className="mx-auto grid max-w-6xl gap-12 px-4 pb-20 pt-12 sm:px-6 lg:grid-cols-[1.1fr_1fr] lg:gap-16 lg:pt-20">
         <div className="max-w-xl">
-          <h1 className="text-[40px] font-semibold sm:text-[56px]">Apply once. Hear back within 40 hours.</h1>
+          <h1 className="text-[40px] font-semibold sm:text-[56px]">Apply once. Hear back within 48 hours.</h1>
           <p className="mt-6 text-[18px] leading-relaxed text-grey-700">
-            Opponium is an invite-only hiring network for students and early-career engineers. Every application gets a reply in 40
+            Opponium is an invite-only hiring network for students and early-career engineers. Every application gets a reply in 48
             hours, and you can see exactly where yours is the whole time.
           </p>
           <div className="mt-8 flex flex-wrap gap-3">
@@ -80,7 +80,7 @@ export default function Landing() {
       <section className="border-t border-grey-200">
         <div className="mx-auto grid max-w-6xl gap-10 px-4 py-16 sm:px-6 sm:py-20 lg:grid-cols-[1fr_1.4fr] lg:gap-16">
           <div>
-            <h2 className="text-[28px] font-semibold">What happens in those 40 hours</h2>
+            <h2 className="text-[28px] font-semibold">What happens in those 48 hours</h2>
             <p className="mt-4 max-w-sm text-grey-700">
               Every company uses the same five stages, so “Profile review” means the same thing at a startup as it does at a bank.
             </p>
@@ -108,7 +108,7 @@ export default function Landing() {
               <h2 className="text-[28px] font-semibold">For hiring teams</h2>
               <p className="mt-4 max-w-md text-grey-700">
                 Your inbox is sorted by who is waiting longest. Move people between stages, tell them what you're doing with one tap, and
-                never let a reply slip past 40 hours.
+                never let a reply slip past 48 hours.
               </p>
               <ul className="mt-6 space-y-2 text-grey-700">
                 <li>Candidates arrive verified by email and phone</li>
@@ -153,7 +153,7 @@ export default function Landing() {
           <h2 className="text-[28px] font-semibold">Why invite only</h2>
           <div>
             <p className="max-w-2xl text-grey-700">
-              A 40-hour promise only works if every team can keep it. We add companies when they have the people to reply, and candidates
+              A 48-hour promise only works if every team can keep it. We add companies when they have the people to reply, and candidates
               in groups that match the roles that are open. It's smaller, but every application is read.
             </p>
             <div className="mt-6 flex flex-wrap gap-3">
