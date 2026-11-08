@@ -48,6 +48,9 @@ DATABASES = {
         conn_health_checks=True,
     )
 }
+if DATABASES["default"]["ENGINE"].endswith("postgresql"):
+    # Fail fast instead of hanging the whole service when the database is unreachable
+    DATABASES["default"].setdefault("OPTIONS", {})["connect_timeout"] = 10
 
 AUTH_USER_MODEL = "accounts.User"
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
@@ -59,10 +62,18 @@ USE_TZ = True
 STATIC_URL = "static/"
 STATIC_ROOT = BASE_DIR / "staticfiles"
 
-CORS_ALLOWED_ORIGINS = env_list(
-    "CORS_ALLOWED_ORIGINS",
-    "http://localhost:5173,http://localhost:5174,http://localhost:4173,http://localhost:4174",
-)
+# Production sites are always allowed; CORS_ALLOWED_ORIGINS adds more (previews, local dev).
+PRODUCTION_ORIGINS = [
+    "https://www.opponium.in",
+    "https://opponium.in",
+    "https://opponium.vercel.app",
+    "https://opponium-admin.vercel.app",
+]
+CORS_ALLOWED_ORIGINS = PRODUCTION_ORIGINS + [
+    o
+    for o in env_list("CORS_ALLOWED_ORIGINS", "http://localhost:5173,http://localhost:5174,http://localhost:4173,http://localhost:4174")
+    if o not in PRODUCTION_ORIGINS
+]
 
 if not DEBUG:
     SECURE_PROXY_SSL_HEADER = ("HTTP_X_FORWARDED_PROTO", "https")
