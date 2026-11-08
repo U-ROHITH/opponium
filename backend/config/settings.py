@@ -66,6 +66,8 @@ STATIC_ROOT = BASE_DIR / "staticfiles"
 PRODUCTION_ORIGINS = [
     "https://www.opponium.in",
     "https://opponium.in",
+    "https://www.opponium.com",
+    "https://opponium.com",
     "https://opponium.vercel.app",
     "https://opponium-admin.vercel.app",
 ]
